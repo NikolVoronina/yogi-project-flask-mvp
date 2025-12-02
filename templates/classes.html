@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .classes-container {
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 20px 0 60px;
+  }
+
+  /* Header */
+  .classes-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+
+  .classes-back {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #111;
+    text-decoration: none;
+    background: white;
+  }
+
+  .classes-title {
+    flex: 1;
+    text-align: center;
+    font-size: 34px;
+    font-weight: 600;
+    margin-right: 42px;
+  }
+
+  /* Class block */
+  .class-block {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    align-items: center;
+    gap: 40px; /* Увеличили расстояние между текстом и фото */
+    margin-bottom: 55px;
+  }
+
+  .class-block.reverse {
+    grid-template-columns: 1fr 1.1fr;
+  }
+
+  /* Pills */
+  .class-title-pill {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  /* Gradient variations */
+  .grad-hatha     { background: linear-gradient(90deg, #f3eaff, #f2ffe7); }
+  .grad-vinyasa   { background: linear-gradient(90deg, #fee9f7, #f4f2ff); }
+  .grad-power     { background: linear-gradient(90deg, #f1ffd8, #f9ffe7); }
+  .grad-prenatal  { background: linear-gradient(90deg, #ffe8f2, #f3f0ff); }
+  .grad-strength  { background: linear-gradient(90deg, #fff7d5, #f8f0ff); }
+
+  /* Text */
+  .class-desc {
+    font-size: 15px;
+    color: #444;
+    line-height: 1.55;
+    max-width: 370px; /* Текст не будет растягиваться слишком близко */
+  }
+
+  /* Images */
+  .class-image {
+    width: 100%;
+    height: 260px; /* БОЛЬШИЕ ФОТО, КРАСИВО КАК НА РЕФЕРЕНСЕ */
+    border-radius: 26px;
+    background-size: cover;
+    background-position: center;
+  }
+</style>
+
+<div class="classes-container">
+
+  <div class="classes-header">
+    <a href="{{ url_for('index') }}" class="classes-back">&larr;</a>
+    <div class="classes-title">Classes</div>
+  </div>
+
+  <!-- Hatha Yoga -->
+  <div class="class-block">
+    <div>
+      <div class="class-title-pill grad-hatha">Hatha Yoga</div>
+      <div class="class-desc">
+        A gentle and traditional practice focusing on posture, breathing, and balance.
+        Perfect for beginners or anyone seeking calm, mindful movement.
+      </div>
+    </div>
+
+    <div class="class-image"
+         style="background-image:url('{{ url_for('static', filename='img/instructor-1.jpg') }}');">
+    </div>
+  </div>
+
+  <!-- Vinyasa Flow -->
+  <div class="class-block reverse">
+    <div class="class-image"
+         style="background-image:url('{{ url_for('static', filename='img/instructor-2.jpg') }}');">
+    </div>
+
+    <div>
+      <div class="class-title-pill grad-vinyasa">Vinyasa Flow</div>
+      <div class="class-desc">
+        Dynamic class where breath guides fluid transitions between poses.
+        Great for building endurance, flexibility, and a sense of flow.
+      </div>
+    </div>
+  </div>
+
+  <!-- Power Yoga -->
+  <div class="class-block">
+    <div>
+      <div class="class-title-pill grad-power">Power Yoga</div>
+      <div class="class-desc">
+        A strong and energetic practice designed to improve stamina, tone muscles,
+        and boost inner strength.
+      </div>
+    </div>
+
+    <div class="class-image"
+         style="background-image:url('{{ url_for('static', filename='img/instructor-3.jpg') }}');">
+    </div>
+  </div>
+
+  <!-- Prenatal Yoga -->
+  <div class="class-block reverse">
+    <div class="class-image"
+         style="background-image:url('{{ url_for('static', filename='img/instructor-4.jpg') }}');">
+    </div>
+
+    <div>
+      <div class="class-title-pill grad-prenatal">Prenatal Yoga</div>
+      <div class="class-desc">
+        Safe, supportive sessions designed for moms-to-be.
+        Gentle movements, breathing techniques, and relaxation to nurture both body and baby.
+      </div>
+    </div>
+  </div>
+
+  <!-- Stretch & Strength -->
+  <div class="class-block">
+    <div>
+      <div class="class-title-pill grad-strength">Stretch & Strength</div>
+      <div class="class-desc">
+        A fusion of yoga and functional training.
+        Focused on mobility, core stability, and strong yet flexible movement.
+      </div>
+    </div>
+
+    <div class="class-image"
+         style="background-image:url('{{ url_for('static', filename='img/instructor-5.jpg') }}');">
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

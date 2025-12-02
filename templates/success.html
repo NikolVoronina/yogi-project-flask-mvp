@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Takk for booking! 🙏</h2>
+  <p>Du er nå registrert på: <strong>{{ yoga_class.title }}</strong></p>
+  <p class="muted">
+    Dato: {{ yoga_class.date }}<br>
+    Start: {{ yoga_class.start_time }}
+  </p>
+  <a href="{{ url_for('index') }}">Tilbake til listen</a>
+{% endblock %}

@@ -1,0 +1,770 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --yogi-green: #BAD341;
+    --yogi-dark: #1E1E1E;
+    --yogi-pink: #D341C4;
+    --yogi-muted: #666666;
+  }
+
+  .landing {
+    color: var(--yogi-dark);
+  }
+
+  .landing-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+
+  .landing-hero-text h1 {
+    font-size: 40px;
+    line-height: 1.1;
+    margin: 0 0 16px;
+    color: var(--yogi-green);
+  }
+
+  .landing-hero-text p {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: var(--yogi-muted);
+  }
+
+  .landing-hero-cta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .landing-hero-cta a.landing-main-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 26px;
+    border-radius: 999px;
+    border: none;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--yogi-green);
+    color: var(--yogi-dark);
+    box-shadow: 0 10px 22px rgba(186, 211, 65, 0.6);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+
+  .landing-hero-cta a.landing-main-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(186, 211, 65, 0.7);
+  }
+
+  .landing-hero-cta span.subnote {
+    font-size: 11px;
+    color: var(--yogi-muted);
+  }
+
+  .landing-hero-image {
+    border-radius: 32px;
+    overflow: hidden;
+    position: relative;
+    min-height: 260px;
+    background: #222;
+  }
+
+  .landing-hero-image::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("{{ url_for('static', filename='img/hero-main.jpg') }}");
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.95);
+  }
+
+  .landing-hero-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 0% 0%, rgba(186, 211, 65, 0.4), transparent 55%),
+      radial-gradient(circle at 100% 80%, rgba(211, 65, 196, 0.25), transparent 55%);
+    mix-blend-mode: soft-light;
+  }
+
+  .landing-section {
+    margin-bottom: 40px;
+  }
+
+  .landing-section-title {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .landing-section-title span.marker {
+    width: 54px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--yogi-green), var(--yogi-pink));
+    display: inline-block;
+  }
+
+  .landing-welcome-text {
+    max-width: 640px;
+    font-size: 14px;
+    color: var(--yogi-muted);
+  }
+
+  /* Our space cards */
+  .space-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .space-card {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    min-height: 180px;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+    color: white;
+
+  }
+
+  .space-card.space-1 {
+    background-image: url("{{ url_for('static', filename='img/space-individual.jpg') }}");
+    background-size: cover;
+    background-position: center;
+  }
+
+  .space-card.space-2 {
+    background-image: url("{{ url_for('static', filename='img/space-rooms.jpg') }}");
+    background-size: cover;
+    background-position: center;
+  }
+
+  .space-card.space-3 {
+    background: #111;
+  }
+
+  .space-card.space-4 {
+    background: #f4e8ff;
+    color: var(--yogi-dark);
+  }
+
+  .space-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent 40%);
+    pointer-events: none;
+  }
+
+  .space-card.space-4::after {
+    display: none;
+  }
+
+  .space-card-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .space-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .space-card-text {
+    font-size: 12px;
+    opacity: 0.9;
+  }
+
+  .space-card-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 100%;
+    color: #fff;
+    font-size: 13px;
+  }
+
+  .space-card-more button {
+    border-radius: 999px;
+    border: none;
+    padding: 6px 10px;
+    background: #ffffff;
+    color: var(--yogi-dark);
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  /* Schedule section – пока как статический блок */
+  .schedule-card {
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    padding: 18px 16px;
+    background: #fafafa;
+  }
+
+  .schedule-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .schedule-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+  }
+
+  .schedule-filters {
+    display: flex;
+    gap: 8px;
+  }
+
+  .pill-select {
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    padding: 6px 10px;
+    font-size: 12px;
+    background: #fff;
+  }
+
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .schedule-day-header {
+    font-weight: 500;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+
+  .schedule-slot {
+    border-radius: 14px;
+    padding: 6px 8px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 6px;
+  }
+
+  .schedule-slot--green {
+    background: #f8fbe8;
+    border-color: #d9e88d;
+  }
+
+  .schedule-slot--pink {
+    background: #fbe8fb;
+    border-color: #f0b8ee;
+  }
+
+  .schedule-slot-title {
+    font-weight: 500;
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  .schedule-slot-time {
+    font-size: 10px;
+    color: var(--yogi-muted);
+    margin-bottom: 4px;
+  }
+
+  .schedule-slot button {
+    border-radius: 999px;
+    border: none;
+    padding: 2px 10px;
+    font-size: 10px;
+    cursor: pointer;
+    background: #fff;
+  }
+
+  .schedule-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--yogi-muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    margin-right: 6px;
+  }
+
+  .dot-green {
+    background: #f8fbe8;
+    border: 1px solid #d9e88d;
+  }
+
+  .dot-pink {
+    background: #fbe8fb;
+    border: 1px solid #f0b8ee;
+  }
+
+  .dot-grey {
+    background: #e5e7eb;
+    border: 1px solid #d1d5db;
+  }
+
+  /* Instructors */
+  .instructors-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .instructor-card {
+    border-radius: 24px;
+    overflow: hidden;
+    background: #f9fafb;
+  }
+
+  .instructor-photo {
+    height: 150px;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .instructor-info {
+    padding: 10px 12px 14px;
+    font-size: 12px;
+  }
+
+  .instructor-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .instructor-role {
+    color: var(--yogi-muted);
+    font-size: 11px;
+  }
+
+  /* FAQ */
+  .faq-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .faq-item {
+    border-radius: 999px;
+    padding: 10px 14px;
+    background: linear-gradient(90deg, rgba(186, 211, 65, 0.15), rgba(211, 65, 196, 0.1));
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+
+  .faq-item span.question {
+    font-weight: 500;
+  }
+
+  /* Reviews */
+  .reviews-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .review-card {
+    border-radius: 16px;
+    padding: 14px 14px 16px;
+    background: #f9fafb;
+    font-size: 12px;
+  }
+
+  .review-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .review-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .review-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--yogi-dark);
+  }
+
+  .review-name {
+    font-weight: 500;
+  }
+
+  .review-stars {
+    font-size: 11px;
+    color: #f59e0b;
+  }
+
+  .review-text {
+    color: var(--yogi-muted);
+    line-height: 1.4;
+  }
+
+  .landing-footer-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 26px;
+  }
+
+  .landing-footer-cta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: 999px;
+    border: none;
+    background: #111827;
+    color: #f9fafb;
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  @media (max-width: 900px) {
+    .landing-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .space-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .schedule-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .instructors-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reviews-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
+
+<div class="landing">
+
+  <!-- HERO -->
+  <section class="landing-hero">
+    <div class="landing-hero-text">
+      <h1>Yoga Studio in Oslo</h1>
+      <p>
+        A sanctuary of harmony, movement, and self-discovery, inspired by nature and a modern lifestyle.
+      </p>
+      <div class="landing-hero-cta">
+        <a href="#schedule" class="landing-main-cta">
+          Book now
+        </a>
+        <span class="subnote">* 20% for the first two classes</span>
+      </div>
+    </div>
+    <div class="landing-hero-image">
+      <!-- фон берётся из CSS через static/img/hero-main.jpg -->
+    </div>
+  </section>
+
+  <!-- WELCOME -->
+  <section class="landing-section">
+    <div class="landing-section-title">
+      <span class="marker"></span>
+      <span>WELCOME TO <strong>YOGI</strong>!</span>
+    </div>
+    <p class="landing-welcome-text">
+      A sanctuary of harmony, movement, and self-discovery. Our studio in Oslo offers a warm and modern
+      space where everyone — from beginners to experienced practitioners — can grow, breathe and feel inspired.
+    </p>
+  </section>
+
+  <!-- OUR SPACE -->
+  <section class="landing-section">
+    <div class="landing-section-title">
+      <span class="marker"></span>
+      <span>Our space</span>
+    </div>
+    <div class="space-grid">
+
+      <!-- INDIVIDUAL CLASS -->
+      <div class="space-card"
+        style="background-image: url('{{ url_for('static', filename='img/space-individual.jpg') }}');">
+        <div class="space-card-overlay"></div>
+        <div class="space-card-content">
+          <div class="space-card-title">INDIVIDUAL CLASS</div>
+          <div class="space-card-text">For 1–4 people. Calm and private.</div>
+        </div>
+      </div>
+
+      <!-- BLOOM ROOMS -->
+      <div class="space-card" style="background-image: url('{{ url_for('static', filename='img/space-bloom.jpg') }}');">
+        <div class="space-card-overlay"></div>
+        <div class="space-card-content">
+          <div class="space-card-title">2 Bloom rooms</div>
+          <div class="space-card-text">Dynamic classes for up to 12 people.</div>
+        </div>
+      </div>
+
+      <!-- MORE PHOTOS -->
+      <div class="space-card" style="background-image: url('{{ url_for('static', filename='img/space-more.jpg') }}');">
+        <div class="space-card-overlay"></div>
+        <div class="space-card-content">
+          <div class="space-card-title">More Photos</div>
+          <div class="space-card-text">Take a closer look at our cozy space.</div>
+        </div>
+      </div>
+
+      <!-- CLEAN & SAFE остаётся как в дизайне -->
+      <div class="space-card space-4">
+        <div class="space-card-content">
+          <div class="space-card-title">Clean &amp; Safe</div>
+          <div class="space-card-text">A welcoming space for everyone.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- SCHEDULE -->
+  <!-- SCHEDULE -->
+  <section class="landing-section" id="schedule">
+    <div class="landing-section-title">
+      <span class="marker"></span>
+      <span>Schedule</span>
+    </div>
+
+    <div class="schedule-card">
+      <!-- HEADER -->
+
+      <div class="schedule-header">
+        <div class="schedule-range">
+          <span>{{ week_days[0].date.strftime("%d %B") }} – {{ week_days[-1].date.strftime("%d %B") }}</span>
+        </div>
+
+        <div class="schedule-filters">
+          <select class="pill-select">
+            <option>Group classes</option>
+          </select>
+          <select class="pill-select">
+            <option>All types</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- GRID -->
+
+      <div class="schedule-grid">
+        {% for day in week_days %}
+        <div>
+          <div class="schedule-day-header">
+            {{ day.weekday_label }}
+            <br>
+            <span style="font-size:10px;color:#999;">{{ day.date.strftime("%d %b") }}</span>
+          </div>
+
+          {% set day_classes = classes_by_date.get(day.date) %}
+
+          {% if day_classes %}
+          {% for cls in day_classes[:2] %} {# максимум 2 занятия в превью #}
+
+          {# определяем цвет #}
+          {% set cls_color = 'schedule-slot--green' %}
+          {% if 'prenatal' in cls.title|lower %}
+          {% set cls_color = 'schedule-slot--pink' %}
+          {% endif %}
+
+          <div class="schedule-slot {{ cls_color }}">
+            <div class="schedule-slot-title">{{ cls.title }}</div>
+           <div class="schedule-slot-time">
+  {{ cls.start_time_str }} – {{ cls.end_time_str }}
+</div>
+
+            {% if cls.booked_spots < cls.max_spots %} <a href="{{ url_for('book', class_id=cls.id) }}">
+              <button type="button">Book</button>
+              </a>
+              {% else %}
+              <button type="button" disabled style="opacity:0.4;">Full</button>
+              {% endif %}
+          </div>
+
+          {% endfor %}
+          {% else %}
+          <div style="font-size:10px;color:#aaa;text-align:center;margin-top:10px;">
+            No classes
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- LEGEND -->
+
+      <div class="schedule-legend">
+        <span><span class="legend-dot dot-green"></span>For everyone</span>
+        <span><span class="legend-dot dot-pink"></span>Allowed for pregnant women</span>
+        <span><span class="legend-dot dot-grey"></span>Overbooked</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- INSTRUCTORS -->
+  <section class="landing-section">
+    <div class="landing-section-title">
+      <span class="marker"></span>
+      <span>Meet Our Instructors</span>
+    </div>
+    <div class="instructors-row">
+      <div class="instructor-card">
+        <div class="instructor-photo"
+          style="background-image:url('{{ url_for('static', filename='img/instructor-1.jpg') }}');"></div>
+        <div class="instructor-info">
+          <div class="instructor-name">Mette</div>
+          <div class="instructor-role">Mindful Yoga Guide</div>
+        </div>
+      </div>
+      <div class="instructor-card">
+        <div class="instructor-photo"
+          style="background-image:url('{{ url_for('static', filename='img/instructor-2.jpg') }}');"></div>
+        <div class="instructor-info">
+          <div class="instructor-name">Lina Berg</div>
+          <div class="instructor-role">Prenatal Yoga Specialist</div>
+        </div>
+      </div>
+      <div class="instructor-card">
+        <div class="instructor-photo"
+          style="background-image:url('{{ url_for('static', filename='img/instructor-3.jpg') }}');"></div>
+        <div class="instructor-info">
+          <div class="instructor-name">Maya Solberg</div>
+          <div class="instructor-role">Vinyasa Flow Expert</div>
+        </div>
+      </div>
+      <div class="instructor-card">
+        <div class="instructor-photo"
+          style="background-image:url('{{ url_for('static', filename='img/instructor-4.jpg') }}');"></div>
+        <div class="instructor-info">
+          <div class="instructor-name">Milla Mackiee</div>
+          <div class="instructor-role">Strength &amp; Stretch Coach</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="landing-section">
+    <div class="landing-section-title">
+      <span class="marker"></span>
+      <span>FAQ</span>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <span class="question">How can I book a class?</span>
+        <span>⌄</span>
+      </div>
+      <div class="faq-item">
+        <span class="question">Do I need to bring my own mat?</span>
+        <span>⌄</span>
+      </div>
+      <div class="faq-item">
+        <span class="question">Can beginners join the classes?</span>
+        <span>⌄</span>
+      </div>
+      <div class="faq-item">
+        <span class="question">Do you have special classes for pregnancy?</span>
+        <span>⌄</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="landing-section">
+    <div class="landing-section-title">
+      <span class="marker"></span>
+      <span>Reviews</span>
+    </div>
+    <div class="reviews-row">
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-user">
+            <div class="review-avatar">KK</div>
+            <div>
+              <div class="review-name">Kate K.</div>
+              <div class="review-stars">★★★★★</div>
+            </div>
+          </div>
+          <div>“</div>
+        </div>
+        <div class="review-text">
+          Absolutely love this studio! The space is calming, the instructors are incredibly professional,
+          and booking classes is super easy. I always leave feeling refreshed and inspired.
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-user">
+            <div class="review-avatar">EB</div>
+            <div>
+              <div class="review-name">Emilie B.</div>
+              <div class="review-stars">★★★★★</div>
+            </div>
+          </div>
+          <div>“</div>
+        </div>
+        <div class="review-text">
+          YOGI has been my safe space during pregnancy. The prenatal classes are gentle, thoughtful,
+          and exactly what I needed. I feel stronger, calmer, and truly supported.
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-footer-cta">
+      <a href="#schedule">
+        Book the class →
+      </a>
+    </div>
+  </section>
+
+</div>
+{% endblock %}

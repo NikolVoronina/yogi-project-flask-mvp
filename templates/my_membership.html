@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>My membership</h2>
+
+  <p>Hello, {{ current_user.full_name }} ({{ current_user.email }})</p>
+
+  <h3>Future classes</h3>
+  {% if future_classes %}
+    <ul>
+      {% for b in future_classes %}
+        <li>{{ b.class_title }} – {{ b.date }} {{ b.start_time }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No future classes yet.</p>
+  {% endif %}
+
+  <h3>History of classes</h3>
+  {% if past_classes %}
+    <ul>
+      {% for b in past_classes %}
+        <li>{{ b.class_title }} – {{ b.date }} {{ b.start_time }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No classes in history.</p>
+  {% endif %}
+{% endblock %}

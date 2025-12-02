@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Yogi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --yogi-bg: #0c1115;
+      --yogi-accent: #c9ff4a;
+      --yogi-accent-soft: #e8ffc9;
+      --yogi-text-main: #111827;
+      --yogi-text-muted: #6b7280;
+      --yogi-card-bg: #ffffff;
+      --yogi-radius-xl: 32px;
+      --yogi-radius-lg: 24px;
+      --yogi-radius-pill: 999px;
+      --yogi-shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--yogi-bg);
+      color: var(--yogi-text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Фоновые «волны» – пока заглушки */
+    .yogi-bg-wave {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+      background:
+        radial-gradient(circle at 0% 20%, rgba(201, 255, 74, 0.25), transparent 55%),
+        radial-gradient(circle at 100% 75%, rgba(255, 192, 203, 0.18), transparent 55%);
+    }
+
+    .yogi-bg-image-placeholder {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      background-size: cover;
+      background-position: center;
+      /* сюда потом подставим реальную картинку из Figma */
+      background-image: linear-gradient(to bottom, #0c1115 0%, #1f2937 40%, #0c1115 100%);
+      opacity: 0.9;
+    }
+
+    /* === Верхнее фиксированное меню === */
+    .yogi-shell {
+      width: 100%;
+      max-width: 1200px;
+      padding: 16px 20px 40px;
+    }
+
+    .yogi-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding-bottom: 16px;
+    }
+
+    .yogi-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .yogi-logo {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--yogi-accent);
+      letter-spacing: 0.04em;
+    }
+
+    .yogi-nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .yogi-nav a {
+      font-size: 14px;
+      text-decoration: none;
+      color: #e5e7eb;
+      padding: 4px 10px;
+      border-radius: 999px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .yogi-nav a:hover {
+      background: rgba(229, 231, 235, 0.14);
+    }
+
+    .yogi-nav a.yogi-nav-active {
+      background: #ffffff;
+      color: #111827;
+      font-weight: 500;
+    }
+
+    .yogi-user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: var(--yogi-radius-pill);
+      padding: 4px 8px 4px 16px;
+      border: 1px solid rgba(201, 255, 74, 0.45);
+    }
+
+    .yogi-user-pill span {
+      font-size: 13px;
+      color: #f9fafb;
+      white-space: nowrap;
+    }
+
+    .yogi-user-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .yogi-user-btn,
+    .yogi-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--yogi-radius-pill);
+      border: none;
+      outline: none;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 12px;
+      padding: 6px 14px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    }
+
+    .yogi-cta-btn {
+      background: var(--yogi-accent);
+      color: #111827;
+      font-weight: 500;
+      box-shadow: 0 8px 18px rgba(190, 242, 100, 0.45);
+    }
+
+    .yogi-cta-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 30px rgba(190, 242, 100, 0.55);
+    }
+
+    .yogi-user-btn {
+      background: transparent;
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    .yogi-user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: url("https://via.placeholder.com/64") center/cover no-repeat;
+      border: 2px solid var(--yogi-accent-soft);
+      flex-shrink: 0;
+    }
+
+    /* === Главная белая карточка === */
+    .yogi-main-card {
+      margin-top: 20px;
+      background: var(--yogi-card-bg);
+      border-radius: var(--yogi-radius-xl);
+      box-shadow: var(--yogi-shadow-soft);
+      padding: 32px 32px 40px;
+      min-height: calc(100vh - 120px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .yogi-main-card-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    /* Контентный блок Jinja */
+    .yogi-content {
+      margin-top: 4px;
+    }
+
+    /* Мелкие утилиты */
+    .yogi-breadcrumb-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--yogi-text-muted);
+      text-decoration: none;
+      margin-bottom: 12px;
+    }
+
+    .yogi-breadcrumb-back:hover {
+      color: #111827;
+    }
+
+    .yogi-page-title {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0 0 12px;
+    }
+
+    @media (max-width: 900px) {
+      .yogi-shell {
+        padding: 10px 10px 30px;
+      }
+
+      .yogi-header-inner {
+        gap: 12px;
+      }
+
+      .yogi-nav {
+        display: none;
+        /* на мобильном потом сделаем бургер */
+      }
+
+      .yogi-main-card {
+        padding: 20px 18px 28px;
+        border-radius: 24px;
+      }
+    }
+
+    /* === WAVES === */
+    .yogi-bg-wave-left,
+    .yogi-bg-wave-right {
+      position: fixed;
+      width: 420px;
+      /* регулируем размер */
+      height: 420px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      z-index: -1;
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    /* ЛЕВАЯ волна */
+    .yogi-bg-wave-left {
+      left: -80px;
+      /* сдвигаем влево */
+      top: 120px;
+      /* регулируем положение */
+      background-image: url("{{ url_for('static', filename='img/waves/wave-left.png') }}");
+    }
+
+    /* ПРАВАЯ волна */
+    .yogi-bg-wave-right {
+      right: -60px;
+      top: 220px;
+      background-image: url("{{ url_for('static', filename='img/waves/wave-right.png') }}");
+    }
+
+    /* МОБИЛЬНАЯ ВЕРСИЯ */
+    @media (max-width: 800px) {
+
+      .yogi-bg-wave-left,
+      .yogi-bg-wave-right {
+        opacity: 0.5;
+        width: 260px;
+        height: 260px;
+      }
+
+      .yogi-bg-wave-left {
+        left: -100px;
+        top: 40px;
+      }
+
+      .yogi-bg-wave-right {
+        right: -100px;
+        top: 220px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="yogi-bg-image-placeholder"></div>
+  <div class="yogi-bg-wave-left"></div>
+  <div class="yogi-bg-wave-right"></div>
+
+  <div class="yogi-shell">
+    <!-- Fixed header -->
+    <header class="yogi-header">
+      <div class="yogi-header-inner">
+        <div class="yogi-logo">
+          <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Yogi logo" style="height:40px; width:auto;">
+        </div>
+
+
+        <nav class="yogi-nav">
+          <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}yogi-nav-active{% endif %}">
+            Home
+          </a>
+          <a href="{{ url_for('classes') }}" class="{% if request.endpoint == 'classes' %}yogi-nav-active{% endif %}">
+            Classes
+          </a>
+          <a href="{{ url_for('pricing') }}" class="{% if request.endpoint == 'pricing' %}yogi-nav-active{% endif %}">
+            Pricing
+          </a>
+          <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}yogi-nav-active{% endif %}">
+            Schedule
+          </a>
+        </nav>
+
+        <div class="yogi-user-pill">
+          {% if current_user %}
+          <span>Hello, {{ current_user.full_name }}</span>
+          <div class="yogi-user-actions">
+            <a href="{{ url_for('my_classes') }}" class="yogi-user-btn">My membership</a>
+            <a href="{{ url_for('logout') }}" class="yogi-user-btn">Log out</a>
+            <div class="yogi-user-avatar"></div>
+          </div>
+          {% else %}
+          <span>Hello, guest</span>
+          <div class="yogi-user-actions">
+            <a href="{{ url_for('login') }}" class="yogi-user-btn">Log in</a>
+            <a href="{{ url_for('register') }}" class="yogi-cta-btn">Create account</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    {% block page_layout %}
+    <!-- default layout (white card) -->
+    <main class="yogi-main-card">
+      <div class="yogi-main-card-inner yogi-content">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+    {% endblock %}
+
+  </div>
+</body>
+
+</html>

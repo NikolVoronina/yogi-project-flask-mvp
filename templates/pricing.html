@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block page_layout %}
+<style>
+  .pricing-fullscreen {
+    position: relative;
+    height: calc(100vh - 70px);
+    width: 100%;
+    overflow: hidden;
+    border-radius: 32px;
+  }
+
+  /* фон, как на главной/логине – можно заменить картинку */
+  .pricing-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url("{{ url_for('static', filename='img/login-bg.jpg') }}");
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.78);
+    z-index: 1;
+  }
+
+  .pricing-dim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .pricing-wrapper {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .pricing-card {
+    width: 100%;
+    max-width: 640px;
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 30px 46px 32px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.4);
+  }
+
+  .pricing-back-row {
+    margin-bottom: 10px;
+  }
+
+  .pricing-back-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    text-decoration: none;
+    color: #111827;
+    font-size: 18px;
+  }
+
+  .pricing-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 10px 0 24px;
+  }
+
+  .pricing-table {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 26px;
+    font-size: 14px;
+  }
+
+  .pricing-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .pricing-row-label {
+    color: #444;
+  }
+
+  .pricing-row-value {
+    color: #555;
+    font-weight: 500;
+  }
+
+  .pricing-cta {
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 999px;
+    border: none;
+    background: #BAD341;
+    color: #1E1E1E;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(186, 211, 65, 0.55);
+    margin-top: 4px;
+  }
+
+  .pricing-cta:disabled {
+    opacity: 0.65;
+    cursor: default;
+    box-shadow: none;
+  }
+
+  @media (max-width: 768px) {
+    .pricing-card {
+      padding: 24px 20px 26px;
+      border-radius: 24px;
+    }
+  }
+</style>
+
+<div class="pricing-fullscreen">
+  <div class="pricing-bg"></div>
+  <div class="pricing-dim"></div>
+
+  <div class="pricing-wrapper">
+    <div class="pricing-card">
+
+      <div class="pricing-back-row">
+        <a href="{{ url_for('index') }}" class="pricing-back-link">&larr;</a>
+      </div>
+
+      <div class="pricing-title">Pricing</div>
+
+      <div class="pricing-table">
+        <div class="pricing-row">
+          <div class="pricing-row-label">Trial Class</div>
+          <div class="pricing-row-value">150 NOK</div>
+        </div>
+        <div class="pricing-row">
+          <div class="pricing-row-label">Single Class</div>
+          <div class="pricing-row-value">200 NOK</div>
+        </div>
+        <div class="pricing-row">
+          <div class="pricing-row-label">10-Class Pass</div>
+          <div class="pricing-row-value">1,700 NOK</div>
+        </div>
+        <div class="pricing-row">
+          <div class="pricing-row-label">Monthly Unlimited</div>
+          <div class="pricing-row-value">1,200 NOK / month</div>
+        </div>
+        <div class="pricing-row">
+          <div class="pricing-row-label">One Private Session</div>
+          <div class="pricing-row-value">600 NOK</div>
+        </div>
+      </div>
+
+      <!-- пока просто кнопка без логики -->
+      <button class="pricing-cta" disabled>
+        Book class now
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .schedule-page {
+        padding-bottom: 30px;
+    }
+
+    .schedule-header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+    }
+
+    .schedule-title {
+        font-size: 32px;
+        font-weight: 600;
+    }
+
+    .schedule-week-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .schedule-arrow-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        background: #fff;
+    }
+
+    .schedule-week-label {
+        padding: 6px 16px;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        font-size: 13px;
+        background: #fff;
+    }
+
+    .schedule-filters {
+        display: flex;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    .schedule-filter-pill {
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+    }
+
+    /* таблица-расписание */
+    .schedule-grid {
+        margin-top: 12px;
+        border-radius: 26px;
+        overflow: hidden;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+    }
+
+    .schedule-grid-header {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        background: #111827;
+        color: #f9fafb;
+        padding: 14px 18px;
+        font-size: 13px;
+    }
+
+    .schedule-grid-header-day {
+        text-align: center;
+    }
+
+    .schedule-grid-header-day div:first-child {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .schedule-grid-body {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        background: #f9fafb;
+        min-height: 260px;
+    }
+
+    .schedule-column {
+        border-right: 1px solid #e5e7eb;
+        padding: 10px 8px 14px;
+        font-size: 12px;
+    }
+
+    .schedule-column:last-child {
+        border-right: none;
+    }
+
+    .schedule-class-card {
+        border-radius: 16px;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        background: #f7fbe5;
+        /* базовый цвет, потом можем добавить разные */
+        position: relative;
+    }
+
+    .schedule-class-time {
+        font-size: 11px;
+        margin-bottom: 2px;
+    }
+
+    .schedule-class-title {
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .schedule-class-spots {
+        position: absolute;
+        top: 6px;
+        right: 10px;
+        font-size: 10px;
+        color: #6b7280;
+    }
+
+    .schedule-class-book-btn {
+        margin-top: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        border: 1px solid #a3b76b;
+        background: #f6ffd5;
+        padding: 2px 10px;
+        font-size: 11px;
+        cursor: pointer;
+        text-decoration: none;
+        color: #374151;
+    }
+
+    .schedule-legend {
+        display: flex;
+        gap: 16px;
+        font-size: 11px;
+        margin-top: 10px;
+        align-items: center;
+    }
+
+    .schedule-legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+    }
+</style>
+
+<div class="schedule-page">
+    <div class="schedule-header-row">
+        <div class="schedule-title">Schedule</div>
+
+        <div class="schedule-filters">
+            <div class="schedule-week-control">
+                <button class="schedule-arrow-btn">&#8592;</button>
+                <div class="schedule-week-label">
+                    {{ week_days[0].date.strftime("%d %b") }} – {{ week_days[-1].date.strftime("%d %b") }}
+                </div>
+                <button class="schedule-arrow-btn">&#8594;</button>
+            </div>
+
+            <div class="schedule-filter-pill">Group classes ▾</div>
+            <div class="schedule-filter-pill">All types ▾</div>
+        </div>
+    </div>
+
+    <div class="schedule-grid">
+        <div class="schedule-grid-header">
+            {% for day in week_days %}
+            <div class="schedule-grid-header-day">
+                <div>{{ day.weekday_label }}</div>
+                <div>{{ day.date.strftime("%d") }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="schedule-grid-body">
+            {% for day in week_days %}
+            <div class="schedule-column">
+                {% set day_classes = classes_by_date.get(day.date) %}
+                {% if day_classes %}
+                {% for cls in day_classes %}
+                <div class="schedule-class-card">
+                    <div class="schedule-class-spots">
+                        {{ cls.booked_spots }}/{{ cls.max_spots }}
+                    </div>
+                    <div class="schedule-class-time">
+                        {{ cls.start_time_str }}
+                        {{ cls.end_time_str }}
+
+                    </div>
+                    <div class="schedule-class-title">
+                        {{ cls.title }}
+                    </div>
+                    <a href="{{ url_for('book', class_id=cls.id) }}" class="schedule-class-book-btn">
+                        Book
+                    </a>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="schedule-legend">
+        <div style="display:flex;align-items:center;gap:6px;">
+            <div class="schedule-legend-dot" style="background:#f7fbe5;"></div>
+            <span>For everyone</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+            <div class="schedule-legend-dot" style="background:#fce8ff;"></div>
+            <span>Allowed for pregnant women</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+            <div class="schedule-legend-dot" style="background:#e5e7eb;"></div>
+            <span>Overbooked</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

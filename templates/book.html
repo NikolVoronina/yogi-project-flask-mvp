@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Book: {{ yoga_class.title }}</h2>
+  <p class="muted">
+    Dato: {{ yoga_class.date }}<br>
+    Start: {{ yoga_class.start_time }}<br>
+    Plasser: {{ yoga_class.booked_spots }} / {{ yoga_class.max_spots }}
+  </p>
+
+  {% if yoga_class.booked_spots >= yoga_class.max_spots %}
+    <p>Beklager, denne timen er full.</p>
+    <a href="{{ url_for('index') }}">Tilbake</a>
+  {% else %}
+    <form method="post">
+      <label>Fullt navn
+        <input type="text" name="full_name" required>
+      </label>
+      <label>E-post
+        <input type="email" name="email" required>
+      </label>
+      <label>Telefon
+        <input type="text" name="phone">
+      </label>
+
+      <button class="btn" type="submit" style="margin-top:1rem;">Bekreft booking</button>
+    </form>
+  {% endif %}
+{% endblock %}
