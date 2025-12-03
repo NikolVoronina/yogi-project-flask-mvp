@@ -106,6 +106,8 @@ def index():
                     c.start_time,
                     c.duration_minutes,
                     c.max_spots,
+                    c.level,
+                    c.category,
                     COUNT(b.id) AS booked_spots
                 FROM classes c
                 LEFT JOIN bookings b ON b.class_id = c.id
@@ -116,9 +118,9 @@ def index():
             cursor.execute(sql, (start_of_week, end_of_week))
             classes = cursor.fetchall()
 
-            # считаем строковые времена для каждого занятия
+            # считаем строковые времена
             for cls in classes:
-                start_td = cls["start_time"]           # timedelta из TIME
+                start_td = cls["start_time"]
                 duration = cls["duration_minutes"]
                 start_str, end_str = format_time_range(start_td, duration)
                 cls["start_time_str"] = start_str
@@ -126,19 +128,19 @@ def index():
     finally:
         conn.close()
 
-
-    # группируем по дате для сетки
+    # группируем по дате
     classes_by_date = {}
     for cls in classes:
         d = cls["date"]
         classes_by_date.setdefault(d, []).append(cls)
 
+    # генерируем дни недели
     week_days = []
     for i in range(6):  # пн–сб
         day_date = start_of_week + dt.timedelta(days=i)
         week_days.append({
             "date": day_date,
-            "weekday_label": day_date.strftime("%A"),  # Monday, Tuesday...
+            "weekday_label": day_date.strftime("%A"),
         })
 
     return render_template(
@@ -148,6 +150,7 @@ def index():
         classes_by_date=classes_by_date,
         current_user=current_user,
     )
+
 
 
 
@@ -417,6 +420,8 @@ def schedule():
                     c.start_time,
                     c.duration_minutes,
                     c.max_spots,
+                    c.level,
+                    c.category,
                     COUNT(b.id) AS booked_spots
                 FROM classes c
                 LEFT JOIN bookings b ON b.class_id = c.id
@@ -424,6 +429,7 @@ def schedule():
                 GROUP BY c.id
                 ORDER BY c.date, c.start_time;
             """
+
             cursor.execute(sql, (start_of_week, end_of_week))
             classes = cursor.fetchall()
 

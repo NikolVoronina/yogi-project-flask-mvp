@@ -611,14 +611,21 @@
 
           {# определяем цвет #}
           {% set cls_color = 'schedule-slot--green' %}
-          {% if 'prenatal' in cls.title|lower %}
-          {% set cls_color = 'schedule-slot--pink' %}
-          {% endif %}
+{% if cls.category == 'prenatal' %}
+  {% set cls_color = 'schedule-slot--pink' %}
+{% endif %}
+
 
           <div class="schedule-slot {{ cls_color }}">
             <div class="schedule-slot-title">{{ cls.title }}</div>
            <div class="schedule-slot-time">
   {{ cls.start_time_str }} – {{ cls.end_time_str }}
+</div>
+<div style="font-size:10px; color:#555; margin-top:2px;">
+  Level: {{ cls.level }}
+  {% if cls.category == 'prenatal' %}
+    · Prenatal
+  {% endif %}
 </div>
 
             {% if cls.booked_spots < cls.max_spots %} <a href="{{ url_for('book', class_id=cls.id) }}">
