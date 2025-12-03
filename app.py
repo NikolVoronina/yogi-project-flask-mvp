@@ -401,12 +401,15 @@ def admin_bookings():
 
 @app.route("/schedule")
 def schedule():
-    """Полная страница расписания той же недели."""
+    """Полная страница расписания той же недели с фильтром по категориям."""
     current_user = get_current_user()
 
     today = dt.date.today()
     start_of_week = today - dt.timedelta(days=today.weekday())
     end_of_week = start_of_week + dt.timedelta(days=5)
+
+    # читаем выбранную категорию из URL-параметра: /schedule?category=prenatal
+    current_category = request.args.get("category", "all")
 
     conn = get_db_connection()
     try:
@@ -429,7 +432,6 @@ def schedule():
                 GROUP BY c.id
                 ORDER BY c.date, c.start_time;
             """
-
             cursor.execute(sql, (start_of_week, end_of_week))
             classes = cursor.fetchall()
 
@@ -443,11 +445,22 @@ def schedule():
     finally:
         conn.close()
 
+    # все доступные категории (для фильтра)
+    categories = sorted({c["category"] for c in classes})
+
+    # применяем фильтр категории (если не "all")
+    if current_category != "all":
+        filtered_classes = [c for c in classes if c["category"] == current_category]
+    else:
+        filtered_classes = classes
+
+    # группируем по дате
     classes_by_date = {}
-    for cls in classes:
+    for cls in filtered_classes:
         d = cls["date"]
         classes_by_date.setdefault(d, []).append(cls)
 
+    # генерируем дни недели
     week_days = []
     for i in range(6):
         day_date = start_of_week + dt.timedelta(days=i)
@@ -461,7 +474,10 @@ def schedule():
         current_user=current_user,
         week_days=week_days,
         classes_by_date=classes_by_date,
+        categories=categories,
+        current_category=current_category,
     )
+
 
 
 

@@ -2,232 +2,273 @@
 
 {% block content %}
 <style>
-    .schedule-page {
-        padding-bottom: 30px;
-    }
+  :root {
+    --yogi-green: #BAD341;
+    --yogi-dark: #1E1E1E;
+    --yogi-pink: #D341C4;
+    --yogi-muted: #666666;
+  }
 
-    .schedule-header-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 18px;
-    }
+  .schedule-page {
+    color: var(--yogi-dark);
+  }
 
-    .schedule-title {
-        font-size: 32px;
-        font-weight: 600;
-    }
+  .schedule-header-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
 
-    .schedule-week-control {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-    }
+  .schedule-title-block h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+  }
 
-    .schedule-arrow-btn {
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
-        border: 1px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        background: #fff;
-    }
+  .schedule-title-block p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--yogi-muted);
+  }
 
-    .schedule-week-label {
-        padding: 6px 16px;
-        border-radius: 999px;
-        border: 1px solid #e5e7eb;
-        font-size: 13px;
-        background: #fff;
-    }
+  .schedule-range-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    font-size: 12px;
+  }
 
-    .schedule-filters {
-        display: flex;
-        gap: 10px;
-        font-size: 13px;
-    }
+  /* Фильтры */
+  .schedule-filters-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
 
-    .schedule-filter-pill {
-        padding: 6px 14px;
-        border-radius: 999px;
-        border: 1px solid #e5e7eb;
-        background: #fff;
-    }
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    font-size: 12px;
+    color: #4b5563;
+    text-decoration: none;
+    cursor: pointer;
+  }
 
-    /* таблица-расписание */
+  .filter-pill:hover {
+    background: #f3f4f6;
+  }
+
+  .filter-pill.active {
+    background: var(--yogi-green);
+    border-color: var(--yogi-green);
+    color: #111827;
+    font-weight: 500;
+  }
+
+  .filter-pill.prenatal {
+    border-color: #f9a8d4;
+  }
+
+  /* Карточка расписания */
+  .schedule-card-full {
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    padding: 18px 16px;
+    background: #fafafa;
+  }
+
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    font-size: 11px;
+  }
+
+  .schedule-day-header {
+    font-weight: 500;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .schedule-day-date {
+    font-size: 10px;
+    color: var(--yogi-muted);
+  }
+
+  .schedule-slot {
+    border-radius: 16px;
+    padding: 8px 8px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 6px;
+  }
+
+  .schedule-slot--green {
+    background: #f8fbe8;
+    border-color: #d9e88d;
+  }
+
+  .schedule-slot--pink {
+    background: #fbe8fb;
+    border-color: #f0b8ee;
+  }
+
+  .schedule-slot-title {
+    font-weight: 500;
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  .schedule-slot-time {
+    font-size: 10px;
+    color: var(--yogi-muted);
+    margin-bottom: 3px;
+  }
+
+  .schedule-slot-meta {
+    font-size: 10px;
+    color: #4b5563;
+    margin-bottom: 4px;
+  }
+
+  .schedule-slot button {
+    border-radius: 999px;
+    border: none;
+    padding: 3px 10px;
+    font-size: 10px;
+    cursor: pointer;
+    background: #ffffff;
+  }
+
+  .schedule-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--yogi-muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    margin-right: 6px;
+    display: inline-block;
+  }
+
+  .dot-green { background: #f8fbe8; border: 1px solid #d9e88d; }
+  .dot-pink { background: #fbe8fb; border: 1px solid #f0b8ee; }
+  .dot-grey { background: #e5e7eb; border: 1px solid #d1d5db; }
+
+  @media (max-width: 900px) {
     .schedule-grid {
-        margin-top: 12px;
-        border-radius: 26px;
-        overflow: hidden;
-        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-
-    .schedule-grid-header {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        background: #111827;
-        color: #f9fafb;
-        padding: 14px 18px;
-        font-size: 13px;
-    }
-
-    .schedule-grid-header-day {
-        text-align: center;
-    }
-
-    .schedule-grid-header-day div:first-child {
-        font-weight: 500;
-        margin-bottom: 2px;
-    }
-
-    .schedule-grid-body {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        background: #f9fafb;
-        min-height: 260px;
-    }
-
-    .schedule-column {
-        border-right: 1px solid #e5e7eb;
-        padding: 10px 8px 14px;
-        font-size: 12px;
-    }
-
-    .schedule-column:last-child {
-        border-right: none;
-    }
-
-    .schedule-class-card {
-        border-radius: 16px;
-        padding: 8px 10px;
-        margin-bottom: 8px;
-        background: #f7fbe5;
-        /* базовый цвет, потом можем добавить разные */
-        position: relative;
-    }
-
-    .schedule-class-time {
-        font-size: 11px;
-        margin-bottom: 2px;
-    }
-
-    .schedule-class-title {
-        font-size: 13px;
-        font-weight: 500;
-        margin-bottom: 4px;
-    }
-
-    .schedule-class-spots {
-        position: absolute;
-        top: 6px;
-        right: 10px;
-        font-size: 10px;
-        color: #6b7280;
-    }
-
-    .schedule-class-book-btn {
-        margin-top: 6px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        border: 1px solid #a3b76b;
-        background: #f6ffd5;
-        padding: 2px 10px;
-        font-size: 11px;
-        cursor: pointer;
-        text-decoration: none;
-        color: #374151;
-    }
-
-    .schedule-legend {
-        display: flex;
-        gap: 16px;
-        font-size: 11px;
-        margin-top: 10px;
-        align-items: center;
-    }
-
-    .schedule-legend-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-    }
+  }
 </style>
 
 <div class="schedule-page">
-    <div class="schedule-header-row">
-        <div class="schedule-title">Schedule</div>
 
-        <div class="schedule-filters">
-            <div class="schedule-week-control">
-                <button class="schedule-arrow-btn">&#8592;</button>
-                <div class="schedule-week-label">
-                    {{ week_days[0].date.strftime("%d %b") }} – {{ week_days[-1].date.strftime("%d %b") }}
-                </div>
-                <button class="schedule-arrow-btn">&#8594;</button>
-            </div>
-
-            <div class="schedule-filter-pill">Group classes ▾</div>
-            <div class="schedule-filter-pill">All types ▾</div>
-        </div>
+  <div class="schedule-header-main">
+    <div class="schedule-title-block">
+      <h1>Schedule</h1>
+      <p>Filter classes by category og finn det som passer deg best.</p>
     </div>
+    <div class="schedule-range-pill">
+      {% if week_days %}
+        {{ week_days[0].date.strftime("%d %B") }} – {{ week_days[-1].date.strftime("%d %B") }}
+      {% endif %}
+    </div>
+  </div>
 
+  <!-- Фильтры по категориям -->
+  <div class="schedule-filters-row">
+    <a href="{{ url_for('schedule', category='all') }}"
+       class="filter-pill {% if current_category == 'all' %}active{% endif %}">
+      All classes
+    </a>
+
+    {% for cat in categories %}
+      <a href="{{ url_for('schedule', category=cat) }}"
+         class="filter-pill 
+                {% if cat == 'prenatal' %}prenatal{% endif %}
+                {% if current_category == cat %} active{% endif %}">
+        {{ cat|capitalize }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Сетка расписания -->
+  <div class="schedule-card-full">
     <div class="schedule-grid">
-        <div class="schedule-grid-header">
-            {% for day in week_days %}
-            <div class="schedule-grid-header-day">
-                <div>{{ day.weekday_label }}</div>
-                <div>{{ day.date.strftime("%d") }}</div>
+      {% for day in week_days %}
+        <div>
+          <div class="schedule-day-header">
+            {{ day.weekday_label }}
+            <div class="schedule-day-date">
+              {{ day.date.strftime("%d %b") }}
             </div>
-            {% endfor %}
-        </div>
+          </div>
 
-        <div class="schedule-grid-body">
-            {% for day in week_days %}
-            <div class="schedule-column">
-                {% set day_classes = classes_by_date.get(day.date) %}
-                {% if day_classes %}
-                {% for cls in day_classes %}
-                <div class="schedule-class-card">
-                    <div class="schedule-class-spots">
-                        {{ cls.booked_spots }}/{{ cls.max_spots }}
-                    </div>
-                    <div class="schedule-class-time">
-                        {{ cls.start_time_str }}
-                        {{ cls.end_time_str }}
+          {% set day_classes = classes_by_date.get(day.date) %}
 
-                    </div>
-                    <div class="schedule-class-title">
-                        {{ cls.title }}
-                    </div>
-                    <a href="{{ url_for('book', class_id=cls.id) }}" class="schedule-class-book-btn">
-                        Book
-                    </a>
+          {% if day_classes %}
+            {% for cls in day_classes %}
+              {% set cls_color = 'schedule-slot--green' %}
+              {% if cls.category == 'prenatal' %}
+                {% set cls_color = 'schedule-slot--pink' %}
+              {% endif %}
+
+              <div class="schedule-slot {{ cls_color }}">
+                <div class="schedule-slot-title">{{ cls.title }}</div>
+
+                <div class="schedule-slot-time">
+                  {{ cls.start_time_str }} – {{ cls.end_time_str }}
                 </div>
-                {% endfor %}
+
+                <div class="schedule-slot-meta">
+                  Level: {{ cls.level }}
+                  {% if cls.category == 'prenatal' %}
+                    · Prenatal
+                  {% endif %}
+                  <br>
+                  Spots: {{ cls.booked_spots }}/{{ cls.max_spots }}
+                </div>
+
+                {% if cls.booked_spots < cls.max_spots %}
+                  <a href="{{ url_for('book', class_id=cls.id) }}">
+                    <button type="button">Book</button>
+                  </a>
+                {% else %}
+                  <button type="button" disabled style="opacity:0.5;">Full</button>
                 {% endif %}
-            </div>
+              </div>
             {% endfor %}
+          {% else %}
+            <div style="font-size:10px; color:#999; text-align:center; margin-top:10px;">
+              No classes
+            </div>
+          {% endif %}
         </div>
+      {% endfor %}
     </div>
 
     <div class="schedule-legend">
-        <div style="display:flex;align-items:center;gap:6px;">
-            <div class="schedule-legend-dot" style="background:#f7fbe5;"></div>
-            <span>For everyone</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-            <div class="schedule-legend-dot" style="background:#fce8ff;"></div>
-            <span>Allowed for pregnant women</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-            <div class="schedule-legend-dot" style="background:#e5e7eb;"></div>
-            <span>Overbooked</span>
-        </div>
+      <span><span class="legend-dot dot-green"></span>For everyone</span>
+      <span><span class="legend-dot dot-pink"></span>Prenatal yoga</span>
+      <span><span class="legend-dot dot-grey"></span>Overbooked / not available</span>
     </div>
+  </div>
+
 </div>
 {% endblock %}
