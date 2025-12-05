@@ -1,28 +1,240 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>My membership</h2>
 
-  <p>Hello, {{ current_user.full_name }} ({{ current_user.email }})</p>
+<style>
+:root {
+    --yogi-green: #BAD341;
+    --yogi-dark: #1E1E1E;
+    --yogi-pink: #D341C4;
+    --yogi-muted: #666666;
+}
 
-  <h3>Future classes</h3>
-  {% if future_classes %}
-    <ul>
-      {% for b in future_classes %}
-        <li>{{ b.class_title }} – {{ b.date }} {{ b.start_time }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No future classes yet.</p>
-  {% endif %}
+/* MAIN WRAPPER */
+.membership-wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    background: white;
+    padding: 40px 50px;
+    border-radius: 32px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    position: relative;
+}
 
-  <h3>History of classes</h3>
-  {% if past_classes %}
-    <ul>
-      {% for b in past_classes %}
-        <li>{{ b.class_title }} – {{ b.date }} {{ b.start_time }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>No classes in history.</p>
-  {% endif %}
+/* Back button */
+.back-btn {
+    font-size: 24px;
+    text-decoration: none;
+    color: var(--yogi-dark);
+}
+
+/* Header */
+.membership-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 600;
+    margin: -10px 0 30px;
+}
+
+/* TOP CARD */
+.top-card {
+    border: 2px solid #eee;
+    border-radius: 28px;
+    padding: 30px;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+
+/* Progress circle */
+.progress-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    position: relative;
+    background: conic-gradient(
+        rgba(186,211,65,0.7) calc(var(--percent) * 1%),
+        rgba(211,65,196,0.4) calc(var(--percent) * 1% + 30deg),
+        #f1f1f1 0
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-circle-inner {
+    width: 118px;
+    height: 118px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 600;
+    flex-direction: column;
+}
+
+.progress-circle-inner span {
+    font-size: 12px;
+    color: var(--yogi-muted);
+    font-weight: 400;
+}
+
+/* User info */
+.top-card-right {
+   flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.top-greeting {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.book-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 30px;
+    border-radius: 999px;
+    background: var(--yogi-green);
+    text-decoration: none;
+    color: var(--yogi-dark);
+    font-size: 14px;
+}
+
+/* Section titles */
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 40px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.section-title svg {
+    width: 14px;
+    height: 14px;
+    transform: rotate(180deg);
+}
+
+/* Class list */
+.class-list {
+    display: grid;
+    gap: 12px;
+}
+
+.class-item {
+    background: hsl(0 0% 98%);
+    border-radius: 22px;
+    padding: 16px 22px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+/* Payments */
+.payment-item {
+    background: #fafafa;
+    padding: 16px 22px;
+    border-radius: 22px;
+    font-size: 14px;
+}
+</style>
+
+<div class="membership-wrapper">
+
+    <!-- Back -->
+    <a href="{{ url_for('index') }}" class="back-btn">←</a>
+
+    <!-- Title -->
+    <div class="membership-title">My membership</div>
+
+    <!-- TOP CARD -->
+    <div class="top-card">
+
+        <!-- Progress circle -->
+        {% set used = past_classes|length %}
+        {% set total = 10 %}
+        {% set percent = (used / total * 100) | int %}
+
+        <div class="progress-circle" style="--percent: {{ percent }}">
+            <div class="progress-circle-inner">
+                {{ used }}/{{ total }}
+                <span>Lessons used</span>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="top-card-right">
+            <div class="top-greeting">Hello, {{ current_user.full_name }}!</div>
+            <div>{{ current_user.email }}</div>
+            {% if current_user.phone %}
+              <div>{{ current_user.phone }}</div>
+            {% endif %}
+            <div>Oslo, Norway</div>
+
+            <a href="{{ url_for('index') }}#schedule" class="book-btn">Book classes</a>
+        </div>
+    </div>
+
+    <!-- FUTURE CLASSES -->
+    <div class="section-title">
+        Future classes
+        <svg><circle cx="6" cy="6" r="6"/></svg>
+    </div>
+
+    <div class="class-list">
+        {% if future_classes %}
+            {% for b in future_classes %}
+                <div class="class-item">
+                    <div>
+                        <strong>{{ b.class_title }}</strong> |
+                        {{ b.date }} , {{ b.start_time }}
+                    </div>
+                    <div>
+                        {{ b.full_name }}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="color:#888;">No upcoming classes</div>
+        {% endif %}
+    </div>
+
+    <!-- HISTORY -->
+    <div class="section-title">
+        History of classes
+        <svg><circle cx="6" cy="6" r="6"/></svg>
+    </div>
+
+    <div class="class-list">
+        {% if past_classes %}
+            {% for b in past_classes %}
+                <div class="class-item">
+                    <strong>{{ b.class_title }}</strong>
+                    <span>
+                        {{ b.date }} , {{ b.start_time }}
+                    </span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="color:#888;">No history yet</div>
+        {% endif %}
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="section-title">
+        Payments
+        <svg><circle cx="6" cy="6" r="6"/></svg>
+    </div>
+
+    <div class="payment-item">
+        No payments yet.
+    </div>
+
+</div>
+
 {% endblock %}

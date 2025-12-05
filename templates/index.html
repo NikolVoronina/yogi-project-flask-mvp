@@ -9,6 +9,36 @@
     --yogi-muted: #666666;
   }
 
+    .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid #e5e7eb;
+    padding: 6px 10px;
+    font-size: 12px;
+    background: #ffffff;
+    text-decoration: none;
+    color: #4b5563;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .filter-pill:hover {
+    background: #f3f4f6;
+  }
+
+  .filter-pill.active {
+    background: var(--yogi-green);
+    border-color: var(--yogi-green);
+    color: #111827;
+    font-weight: 500;
+  }
+
+  .filter-pill.prenatal {
+    border-color: #f9a8d4;
+  }
+
+
   .landing {
     color: var(--yogi-dark);
   }
@@ -568,7 +598,6 @@
   </section>
 
   <!-- SCHEDULE -->
-  <!-- SCHEDULE -->
   <section class="landing-section" id="schedule">
     <div class="landing-section-title">
       <span class="marker"></span>
@@ -577,80 +606,108 @@
 
     <div class="schedule-card">
       <!-- HEADER -->
-
       <div class="schedule-header">
         <div class="schedule-range">
-          <span>{{ week_days[0].date.strftime("%d %B") }} – {{ week_days[-1].date.strftime("%d %B") }}</span>
+          {% if week_days %}
+            <span>
+              {{ week_days[0].date.strftime("%d %B") }} – {{ week_days[-1].date.strftime("%d %B") }}
+            </span>
+          {% else %}
+            <span>This week</span>
+          {% endif %}
         </div>
 
         <div class="schedule-filters">
-          <select class="pill-select">
-            <option>Group classes</option>
-          </select>
-          <select class="pill-select">
-            <option>All types</option>
-          </select>
+          <button
+            type="button"
+            class="filter-pill active"
+            data-category="all">
+            All classes
+          </button>
+
+          {% for cat in categories %}
+            <button
+              type="button"
+              class="filter-pill{% if cat == 'prenatal' %} prenatal{% endif %}"
+              data-category="{{ cat }}">
+              {{ cat|capitalize }}
+            </button>
+          {% endfor %}
         </div>
       </div>
 
-      <!-- GRID -->
-
+      <!-- GRID (preview) -->
       <div class="schedule-grid">
         {% for day in week_days %}
-        <div>
-          <div class="schedule-day-header">
-            {{ day.weekday_label }}
-            <br>
-            <span style="font-size:10px;color:#999;">{{ day.date.strftime("%d %b") }}</span>
+          <div>
+            <div class="schedule-day-header">
+              {{ day.weekday_label }}
+              <br>
+              <span style="font-size:10px;color:#999;">
+                {{ day.date.strftime("%d %b") }}
+              </span>
+            </div>
+
+            {% set day_classes = classes_by_date.get(day.date) %}
+
+            {% if day_classes %}
+              {# максимум 2 занятия на превью #}
+              {% for cls in day_classes[:2] %}
+
+                {% set cls_color = 'schedule-slot--green' %}
+                {% if cls.category == 'prenatal' %}
+                  {% set cls_color = 'schedule-slot--pink' %}
+                {% endif %}
+
+                <div class="schedule-slot {{ cls_color }}" data-category="{{ cls.category }}">
+                  <div class="schedule-slot-title">{{ cls.title }}</div>
+
+                  <div class="schedule-slot-time">
+                    {{ cls.start_time_str }} – {{ cls.end_time_str }}
+                  </div>
+
+                  <div style="font-size:10px; color:#555; margin-bottom:4px;">
+                    Level: {{ cls.level }}
+                    {% if cls.category == 'prenatal' %}
+                      · Prenatal
+                    {% endif %}
+                    <br>
+                    Spots: {{ cls.booked_spots }}/{{ cls.max_spots }}
+                  </div>
+
+                  {% if cls.booked_spots < cls.max_spots %}
+                    <a href="{{ url_for('book', class_id=cls.id) }}">
+                      <button type="button">Book</button>
+                    </a>
+                  {% else %}
+                    <button type="button" disabled style="opacity:0.4;">Full</button>
+                  {% endif %}
+                </div>
+
+              {% endfor %}
+            {% else %}
+              <div style="font-size:10px;color:#aaa;text-align:center;margin-top:10px;">
+                No classes
+              </div>
+            {% endif %}
           </div>
-
-          {% set day_classes = classes_by_date.get(day.date) %}
-
-          {% if day_classes %}
-          {% for cls in day_classes[:2] %} {# максимум 2 занятия в превью #}
-
-          {# определяем цвет #}
-          {% set cls_color = 'schedule-slot--green' %}
-{% if cls.category == 'prenatal' %}
-  {% set cls_color = 'schedule-slot--pink' %}
-{% endif %}
-
-
-          <div class="schedule-slot {{ cls_color }}">
-            <div class="schedule-slot-title">{{ cls.title }}</div>
-           <div class="schedule-slot-time">
-  {{ cls.start_time_str }} – {{ cls.end_time_str }}
-</div>
-<div style="font-size:10px; color:#555; margin-top:2px;">
-  Level: {{ cls.level }}
-  {% if cls.category == 'prenatal' %}
-    · Prenatal
-  {% endif %}
-</div>
-
-            {% if cls.booked_spots < cls.max_spots %} <a href="{{ url_for('book', class_id=cls.id) }}">
-              <button type="button">Book</button>
-              </a>
-              {% else %}
-              <button type="button" disabled style="opacity:0.4;">Full</button>
-              {% endif %}
-          </div>
-
-          {% endfor %}
-          {% else %}
-          <div style="font-size:10px;color:#aaa;text-align:center;margin-top:10px;">
-            No classes
-          </div>
-          {% endif %}
-        </div>
         {% endfor %}
       </div>
 
       <!-- LEGEND -->
-
       <div class="schedule-legend">
         <span><span class="legend-dot dot-green"></span>For everyone</span>
-        <span><span class="legend-dot dot-pink"></span>Allowed for pregnant women</span>
+        <span><span class="legend-dot dot-pink"></span>Prenatal yoga</span>
+        <span><span class="legend-dot dot-grey"></span>Overbooked</span>
+      </div>
+    </div>
+  </section>
+
+
+      <!-- LEGEND -->
+      <div class="schedule-legend">
+        <span><span class="legend-dot dot-green"></span>For everyone</span>
+        <span><span class="legend-dot dot-pink"></span>Prenatal yoga</span>
         <span><span class="legend-dot dot-grey"></span>Overbooked</span>
       </div>
     </div>
@@ -772,6 +829,38 @@
       </a>
     </div>
   </section>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const filterPills = document.querySelectorAll('.schedule-filters .filter-pill');
+    const slots = document.querySelectorAll('.schedule-slot');
+
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const selectedCategory = pill.dataset.category; // 'all', 'group', 'prenatal', ...
+
+        // переключаем активную пилюлю
+        filterPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        // показываем / скрываем слоты
+        slots.forEach(slot => {
+          const slotCategory = slot.dataset.category;
+
+          if (!slotCategory) {
+            slot.style.display = '';
+            return;
+          }
+
+          if (selectedCategory === 'all' || slotCategory === selectedCategory) {
+            slot.style.display = '';
+          } else {
+            slot.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
 
 </div>
 {% endblock %}

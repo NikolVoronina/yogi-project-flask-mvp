@@ -87,7 +87,7 @@ def login_required(view):
 
 @app.route("/")
 def index():
-    """Главная: список занятий + превью расписания недели."""
+    """Главная: список занятий + превью расписания недели (фильтр на фронтенде)."""
     current_user = get_current_user()
 
     today = dt.date.today()
@@ -118,9 +118,9 @@ def index():
             cursor.execute(sql, (start_of_week, end_of_week))
             classes = cursor.fetchall()
 
-            # считаем строковые времена
+            # считаем строковые времена для каждого занятия
             for cls in classes:
-                start_td = cls["start_time"]
+                start_td = cls["start_time"]           # TIME как timedelta
                 duration = cls["duration_minutes"]
                 start_str, end_str = format_time_range(start_td, duration)
                 cls["start_time_str"] = start_str
@@ -128,15 +128,18 @@ def index():
     finally:
         conn.close()
 
-    # группируем по дате
+    # категории, которые есть на этой неделе
+    categories = sorted({c["category"] for c in classes})
+
+    # группируем по дате (без фильтра — всё на фронтенде)
     classes_by_date = {}
     for cls in classes:
         d = cls["date"]
         classes_by_date.setdefault(d, []).append(cls)
 
-    # генерируем дни недели
+    # генерируем дни недели (пн–сб)
     week_days = []
-    for i in range(6):  # пн–сб
+    for i in range(6):
         day_date = start_of_week + dt.timedelta(days=i)
         week_days.append({
             "date": day_date,
@@ -148,11 +151,9 @@ def index():
         classes=classes,
         week_days=week_days,
         classes_by_date=classes_by_date,
+        categories=categories,
         current_user=current_user,
     )
-
-
-
 
 
 
