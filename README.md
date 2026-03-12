@@ -1,60 +1,117 @@
-# 🌿 YOGI — Yoga Studio Web App  
-**Modern booking system for yoga studios, designed with a clean Scandinavian aesthetic and implemented using Flask, MariaDB, and Raspberry Pi.**
+# 🌿 YOGI — Yoga Studio Web App
+
+**Modern yoga booking system designed with a clean Scandinavian aesthetic and built using Flask, MariaDB, and Raspberry Pi.**
 
 ---
 
-## 🚀 Overview
+# 🚀 Overview
 
-YOGI is a full-stack application designed for small and mid-sized yoga studios.  
-It includes:
+YOGI is a lightweight full-stack web application designed for small and mid-sized yoga studios.
 
-- User authentication (register/login/logout)
-- Class scheduling system
-- Booking functionality with limited spots
-- Weekly calendar (auto-generated)
-- Personal dashboard for users
-- Admin booking overview
-- Fully responsive UI based on custom Figma designs
+The platform allows users to:
 
-The project is optimized to run even on a **Raspberry Pi** as a lightweight server.
+- Register and log in
+- Browse weekly yoga schedules
+- Book available classes
+- View personal bookings
+- Track upcoming and past classes
 
----
+Administrators can:
 
-## 🛠️ Tech Stack
+- Access a protected admin panel
+- View all bookings
+- Manage studio activity
 
-### **Backend**
-- Python 3  
-- Flask (Jinja2 templates)  
-- PyMySQL  
-- Werkzeug security (password hashing)
-
-### **Database**
-- MariaDB / MySQL  
-- Hosted on Raspberry Pi
-
-### **Frontend**
-- HTML5  
-- CSS3  
-- Figma → Production templates  
-- Custom design system  
-  - `#BAD341` (primary green)  
-  - `#1E1E1E` (dark)  
-  - `#D341C4` (pink)  
-  - `#666666` (muted)
-
-### **Deployment / Dev Tools**
-- Raspberry Pi Server  
-- VS Code Remote SSH  
-- Git + GitHub  
+The project is optimized to run even on a **Raspberry Pi server**, making it suitable for small studios with minimal infrastructure.
 
 ---
 
+# ✨ Features
+
+### User System
+- User registration
+- Login / logout
+- Secure password hashing
+- Personal dashboard
+
+### Booking System
+- Class booking with limited spots
+- Automatic seat counting
+- Booking confirmation
+
+### Schedule System
+- Weekly schedule
+- Dynamic class loading
+- Category filtering
+
+### Admin System
+- Secure admin login
+- Role-based access (`is_admin`)
+- Protected routes
+- Booking management
+
+---
+
+# 🛠 Tech Stack
+
+## Backend
+
+- Python 3
+- Flask
+- PyMySQL
+- Werkzeug security
+
+Key concepts used:
+
+- session authentication
+- decorators
+- server-side rendering (Jinja2)
+
+---
+
+## Database
+
+MariaDB / MySQL
+
+Hosted locally on Raspberry Pi.
+
+---
+
+## Frontend
+
+- HTML5
+- CSS3
+- Jinja2 Templates
+- Figma → production UI
+
+Design palette:
+
+
+Primary green → #BAD341
+Dark → #1E1E1E
+Accent pink → #D341C4
+Muted gray → #666666
+
+
+---
+
+## Development Tools
+
+- Raspberry Pi server
+- VS Code Remote SSH
+- Git
+- GitHub
+
+---
+
+# 📂 Project Structure
 
 
 yogi/
 │
 ├── app.py # Main Flask application
-├── templates/ # HTML (Jinja2) templates
+│
+├── templates/ # Jinja2 HTML templates
 │ ├── base.html
 │ ├── index.html
 │ ├── login.html
@@ -68,130 +125,204 @@ yogi/
 │ └── admin_bookings.html
 │
 ├── static/
-│ ├── img/ # Studio photos, instructors, etc.
 │ ├── css/
-│ └── js/
+│ ├── js/
+│ └── img/
 │
 └── README.md
 
 
 ---
 
-## 🗄️ Database Schema
+# 🗄 Database Schema
 
-### **users**
-| column          | type      |
-|-----------------|-----------|
-| id (PK)         | int       |
-| full_name       | varchar   |
-| email           | varchar   |
-| phone           | varchar   |
-| gender          | varchar   |
-| birthday        | date      |
-| password_hash   | varchar   |
+## users
 
-### **classes**
-| column          | type      |
-|-----------------|-----------|
-| id (PK)         | int       |
-| title           | varchar   |
-| description     | text      |
-| date            | date      |
-| start_time      | time      |
-| duration_minutes| int       |
-| max_spots       | int       |
+| column | type |
+|------|------|
+| id (PK) | int |
+| full_name | varchar |
+| email | varchar |
+| phone | varchar |
+| gender | varchar |
+| birthday | date |
+| password_hash | varchar |
+| is_admin | tinyint |
 
-### **bookings**
-| column          | type      |
-|-----------------|-----------|
-| id (PK)         | int       |
-| class_id (FK)   | int       |
-| user_id (FK)    | int       |
-| full_name       | varchar   |
-| email           | varchar   |
-| phone           | varchar   |
-| created_at      | timestamp |
+`is_admin` controls administrator access.
+
+
+0 → normal user
+1 → admin user
+
 
 ---
 
-## ▶️ Running the Project (Local or Raspberry Pi)
+## classes
 
-### 1. Navigate to project folder
+| column | type |
+|------|------|
+| id (PK) | int |
+| title | varchar |
+| description | text |
+| date | date |
+| start_time | time |
+| duration_minutes | int |
+| max_spots | int |
+| level | varchar |
+| category | varchar |
 
-```bash
+---
+
+## bookings
+
+| column | type |
+|------|------|
+| id (PK) | int |
+| class_id (FK) | int |
+| user_id (FK) | int |
+| full_name | varchar |
+| email | varchar |
+| phone | varchar |
+| created_at | timestamp |
+
+---
+
+# 🔐 Authentication System
+
+Passwords are **never stored as plain text**.
+
+Flask uses Werkzeug security:
+
+
+generate_password_hash()
+check_password_hash()
+
+
+Authentication is handled using **Flask sessions**.
+
+Example:
+
+```python
+session["user_id"] = user["id"]
+🛡 Admin System
+
+Administrators are identified by:
+
+
+is_admin = 1
+
+
+Admin login page:
+
+
+/admin/login
+
+
+Protected routes use a decorator:
+
+def admin_required(view):
+    @wraps(view)
+    def wrapped_view(**kwargs):
+        if not session.get("is_admin"):
+            return redirect(url_for("admin_login"))
+        return view(**kwargs)
+    return wrapped_view
+
+Example protected route:
+
+@app.route("/admin/bookings")
+@admin_required
+def admin_bookings():
+▶️ Running the Project
+1. Navigate to project folder
 cd ~/apps/yogi
-
 2. Activate virtual environment
 source .venv/bin/activate
-
-3. Run the app
+3. Start Flask server
 python app.py
 
-
-Backend runs on:
+Server runs on:
 
 http://10.0.0.50:5000
+👤 User Features
+Logged-out users
 
-🔐 User Features
-Logged-out
+View yoga classes
 
-Browse classes
+Browse weekly schedule
 
-View schedule
+See pricing
 
-Read instructors
+Explore instructors
 
-View pricing
+Logged-in users
 
-Logged-in
+Book classes
 
-Book available classes
-
-Auto-filled booking data
+Auto-filled booking form
 
 View upcoming classes
 
-View past classes
+View booking history
 
 🛡 Admin Features
 
-Minimal admin dashboard:
+Admin panel includes:
 
-View all bookings
 
-See all user/class info
+/admin/login
+/admin/bookings
 
-Ordered by newest bookings
 
-💻 Development Workflow (VS Code + SSH)
+Admins can:
+
+view all bookings
+
+see user details
+
+track class popularity
+
+monitor studio activity
+
+💻 Development Workflow
+
+Using VS Code + Remote SSH
 
 Open VS Code
 
-Use Remote SSH to connect to Raspberry Pi
+Connect via Remote SSH
 
-Open folder /home/nikolvoronina/apps/yogi
+Open folder:
+
+
+/home/nikolvoronina/apps/yogi
+
 
 Edit files normally
 
-Restart server after changes
+Restart Flask server after changes
 
 📤 Deployment to GitHub
-Initialize repository (on Raspberry Pi)
+
+Initialize repository:
+
 git init
 git add .
 git commit -m "Initial commit"
 git branch -M main
 git remote add origin https://github.com/<your_user>/yogi-project.git
 git push -u origin main
-
 📃 License
 
-MIT License — use it freely for personal, educational, or commercial projects.
+MIT License
+
+Free for personal, educational, or commercial use.
 
 🌸 Author
 
-Created with love and aesthetics by Nikol Voronina
-Designed in Figma · Built on Raspberry Pi
+Nikol Voronina
 
-## 📦 Project Structure
-
+Designed in Figma
+Built with Flask & MariaDB
+Hosted on Raspberry Pi
