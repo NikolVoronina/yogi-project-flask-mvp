@@ -92,7 +92,7 @@
   }
 
   .landing-hero-cta span.subnote {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--yogi-muted);
   }
 
@@ -548,11 +548,10 @@
         <a href="#schedule" class="landing-main-cta">
           Book now
         </a>
-        <span class="subnote">* 20% for the first two classes</span>
+        <span class="subnote">* -20% for the first two classes</span>
       </div>
     </div>
     <div class="landing-hero-image">
-      <!-- фон берётся из CSS через static/img/hero-main.jpg -->
     </div>
   </section>
 
@@ -603,7 +602,7 @@
         </div>
       </div>
 
-      <!-- CLEAN & SAFE остаётся как в дизайне -->
+      <!-- CLEAN & SAFE -->
       <div class="space-card space-4">
         <div class="space-card-content">
           <div class="space-card-title">Clean &amp; Safe</div>
@@ -623,7 +622,6 @@
     </div>
 
     <div class="schedule-card">
-      <!-- HEADER -->
       <div class="schedule-header">
         <div class="schedule-range">
           {% if week_days %}
@@ -653,8 +651,6 @@
           {% endfor %}
         </div>
       </div>
-
-      <!-- GRID (preview) -->
       <div class="schedule-grid">
         {% for day in week_days %}
           <div>
@@ -842,11 +838,9 @@
       pill.addEventListener('click', () => {
         const selectedCategory = pill.dataset.category; // 'all', 'group', 'prenatal', ...
 
-        // переключаем активную пилюлю
         filterPills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
 
-        // показываем / скрываем слоты
         slots.forEach(slot => {
           const slotCategory = slot.dataset.category;
 
