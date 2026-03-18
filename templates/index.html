@@ -180,13 +180,16 @@
   }
 
   .space-card.space-2 {
-    background-image: url("{{ url_for('static', filename='img/space-rooms.jpg') }}");
+    background-image: url("{{ url_for('static', filename='img/space-bloom.jpg') }}");
     background-size: cover;
     background-position: center;
   }
 
   .space-card.space-3 {
     background: #111;
+    background-image: url("{{ url_for('static', filename='img/space-more.jpg') }}");
+    background-size: cover;
+    background-position: center;
   }
 
   .space-card.space-4 {
@@ -399,6 +402,22 @@
     font-size: 11px;
   }
 
+  .instructor-photo-1 {
+    background-image: url("{{ url_for('static', filename='img/instructor-1.jpg') }}");
+  }
+
+  .instructor-photo-2 {
+    background-image: url("{{ url_for('static', filename='img/instructor-2.jpg') }}");
+  }
+
+  .instructor-photo-3 {
+    background-image: url("{{ url_for('static', filename='img/instructor-3.jpg') }}");
+  }
+
+  .instructor-photo-4 {
+    background-image: url("{{ url_for('static', filename='img/instructor-4.jpg') }}");
+  }
+
   /* FAQ */
   .faq-list {
     display: grid;
@@ -558,8 +577,7 @@
     <div class="space-grid">
 
       <!-- INDIVIDUAL CLASS -->
-      <div class="space-card"
-        style="background-image: url('{{ url_for('static', filename='img/space-individual.jpg') }}');">
+      <div class="space-card space-1">
         <div class="space-card-overlay"></div>
         <div class="space-card-content">
           <div class="space-card-title">INDIVIDUAL CLASS</div>
@@ -568,7 +586,7 @@
       </div>
 
       <!-- BLOOM ROOMS -->
-      <div class="space-card" style="background-image: url('{{ url_for('static', filename='img/space-bloom.jpg') }}');">
+      <div class="space-card space-2">
         <div class="space-card-overlay"></div>
         <div class="space-card-content">
           <div class="space-card-title">2 Bloom rooms</div>
@@ -577,7 +595,7 @@
       </div>
 
       <!-- MORE PHOTOS -->
-      <div class="space-card" style="background-image: url('{{ url_for('static', filename='img/space-more.jpg') }}');">
+      <div class="space-card space-3">
         <div class="space-card-overlay"></div>
         <div class="space-card-content">
           <div class="space-card-title">More Photos</div>
@@ -704,16 +722,6 @@
   </section>
 
 
-      <!-- LEGEND -->
-      <div class="schedule-legend">
-        <span><span class="legend-dot dot-green"></span>For everyone</span>
-        <span><span class="legend-dot dot-pink"></span>Prenatal yoga</span>
-        <span><span class="legend-dot dot-grey"></span>Overbooked</span>
-      </div>
-    </div>
-  </section>
-
-
   <!-- INSTRUCTORS -->
   <section class="landing-section">
     <div class="landing-section-title">
@@ -722,32 +730,28 @@
     </div>
     <div class="instructors-row">
       <div class="instructor-card">
-        <div class="instructor-photo"
-          style="background-image:url('{{ url_for('static', filename='img/instructor-1.jpg') }}');"></div>
+        <div class="instructor-photo instructor-photo-1"></div>
         <div class="instructor-info">
           <div class="instructor-name">Mette</div>
           <div class="instructor-role">Mindful Yoga Guide</div>
         </div>
       </div>
       <div class="instructor-card">
-        <div class="instructor-photo"
-          style="background-image:url('{{ url_for('static', filename='img/instructor-2.jpg') }}');"></div>
+        <div class="instructor-photo instructor-photo-2"></div>
         <div class="instructor-info">
           <div class="instructor-name">Lina Berg</div>
           <div class="instructor-role">Prenatal Yoga Specialist</div>
         </div>
       </div>
       <div class="instructor-card">
-        <div class="instructor-photo"
-          style="background-image:url('{{ url_for('static', filename='img/instructor-3.jpg') }}');"></div>
+        <div class="instructor-photo instructor-photo-3"></div>
         <div class="instructor-info">
           <div class="instructor-name">Maya Solberg</div>
           <div class="instructor-role">Vinyasa Flow Expert</div>
         </div>
       </div>
       <div class="instructor-card">
-        <div class="instructor-photo"
-          style="background-image:url('{{ url_for('static', filename='img/instructor-4.jpg') }}');"></div>
+        <div class="instructor-photo instructor-photo-4"></div>
         <div class="instructor-info">
           <div class="instructor-name">Milla Mackiee</div>
           <div class="instructor-role">Strength &amp; Stretch Coach</div>

@@ -6,26 +6,27 @@ from flask import (
     url_for,
     session,
 )
+
 import pymysql
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-
 import datetime as dt
 
 def format_time_range(start_td, duration_minutes):
-    """start_td – timedelta из MySQL TIME, duration_minutes – int (длительность занятия в минутах). 
-       Возвращает (start_str, end_str) в формате 'HH:MM'."""
+    """
+    start_td – timedelta из MySQL TIME
+    duration_minutes – длительность занятия в минутах
+    Возвращает время начала и конца в формате HH:MM
+    """
     if start_td is None or duration_minutes is None:
         return "", ""
 
-    # total_seconds для времени начала
     total_seconds = int(start_td.total_seconds())
 
     start_h = (total_seconds // 3600) % 24
     start_m = (total_seconds % 3600) // 60
     start_str = f"{start_h:02d}:{start_m:02d}"
 
-    # считаем конец
     end_total_seconds = total_seconds + int(duration_minutes) * 60
     end_h = (end_total_seconds // 3600) % 24
     end_m = (end_total_seconds % 3600) // 60
@@ -33,19 +34,18 @@ def format_time_range(start_td, duration_minutes):
 
     return start_str, end_str
 
-
-
 app = Flask(__name__)
 
-# СЕКРЕТНЫЙ КЛЮЧ ДЛЯ СЕССИЙ (можешь поменять на свой)
+# SECRET KEY для сессий
+
 app.secret_key = "super-secret-yogi-key"
 
-# НАСТРОЙКИ ПОДКЛЮЧЕНИЯ К БАЗЕ
+# Параметры базы данных
+
 DB_HOST = "localhost"
 DB_USER = "yogi_user"
-DB_PASSWORD = "Yogi2025!"   # <<< ТВОЙ ПАРОЛЬ
+DB_PASSWORD = "Yogi2025!"
 DB_NAME = "yogi"
-
 
 def get_db_connection():
     return pymysql.connect(
@@ -56,14 +56,16 @@ def get_db_connection():
         cursorclass=pymysql.cursors.DictCursor,
     )
 
-
 def get_current_user():
     """Возвращает словарь с данными юзера или None."""
+
     user_id = session.get("user_id")
+
     if not user_id:
         return None
 
     conn = get_db_connection()
+
     try:
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
@@ -75,40 +77,45 @@ def get_current_user():
 
 
 def login_required(view):
-    """Декоратор: требует логина для доступа к странице."""
+    """Декоратор для страниц, требующих логин"""
+
     @wraps(view)
     def wrapped_view(**kwargs):
         if "user_id" not in session:
-            # можно добавить next=url_for(...)
             return redirect(url_for("login"))
         return view(**kwargs)
+
     return wrapped_view
 
 
 def admin_required(view):
-    """Декоратор: требует admin-логина для доступа к админ-страницам."""
+    """Декоратор для админ страниц"""
+
     @wraps(view)
     def wrapped_view(**kwargs):
         if not session.get("is_admin"):
             return redirect(url_for("admin_login"))
         return view(**kwargs)
+
     return wrapped_view
 
 
 @app.route("/")
 def index():
-    """Главная: список занятий + превью расписания недели (фильтр на фронтенде)."""
+    """Главная страница"""
+
     current_user = get_current_user()
 
     today = dt.date.today()
-    start_of_week = today - dt.timedelta(days=today.weekday())   # понедельник
-    end_of_week = start_of_week + dt.timedelta(days=5)           # понедельник–суббота
+    start_of_week = today - dt.timedelta(days=today.weekday())
+    end_of_week = start_of_week + dt.timedelta(days=5)
 
     conn = get_db_connection()
+
     try:
         with conn.cursor() as cursor:
             sql = """
-                SELECT 
+                SELECT
                     c.id,
                     c.title,
                     c.description,
@@ -125,36 +132,41 @@ def index():
                 GROUP BY c.id
                 ORDER BY c.date, c.start_time;
             """
+
             cursor.execute(sql, (start_of_week, end_of_week))
             classes = cursor.fetchall()
 
-            # считаем строковые времена для каждого занятия
             for cls in classes:
-                start_td = cls["start_time"]           # TIME как timedelta
+                start_td = cls["start_time"]
                 duration = cls["duration_minutes"]
+
                 start_str, end_str = format_time_range(start_td, duration)
+
                 cls["start_time_str"] = start_str
                 cls["end_time_str"] = end_str
+
     finally:
         conn.close()
 
-    # категории, которые есть на этой неделе
     categories = sorted({c["category"] for c in classes})
 
-    # группируем по дате (без фильтра — всё на фронтенде)
     classes_by_date = {}
+
     for cls in classes:
         d = cls["date"]
         classes_by_date.setdefault(d, []).append(cls)
 
-    # генерируем дни недели (пн–сб)
     week_days = []
+
     for i in range(6):
         day_date = start_of_week + dt.timedelta(days=i)
-        week_days.append({
-            "date": day_date,
-            "weekday_label": day_date.strftime("%A"),
-        })
+
+        week_days.append(
+            {
+                "date": day_date,
+                "weekday_label": day_date.strftime("%A"),
+            }
+        )
 
     return render_template(
         "index.html",
@@ -165,20 +177,19 @@ def index():
         current_user=current_user,
     )
 
-
-
-
-# ---------- РЕГИСТРАЦИЯ / ЛОГИН / ЛОГАУТ ----------
+# ---------------- REGISTER ----------------
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     current_user = get_current_user()
+
     if current_user:
         return redirect(url_for("index"))
 
     error = None
 
     if request.method == "POST":
+
         full_name = request.form.get("full_name")
         email = request.form.get("email")
         phone = request.form.get("phone")
@@ -188,58 +199,86 @@ def register():
 
         if not full_name or not email or not password:
             error = "Name, e-mail og passord er påkrevd."
+
         else:
+
             conn = get_db_connection()
+
             try:
                 with conn.cursor() as cursor:
-                    # проверяем, есть ли уже пользователь с таким email
+
                     cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
                     existing = cursor.fetchone()
+
                     if existing:
                         error = "Bruker med denne e-posten finnes allerede."
+
                     else:
+
                         password_hash = generate_password_hash(password)
+
                         sql = """
-                            INSERT INTO users (full_name, email, phone, gender, birthday, password_hash)
-                            VALUES (%s, %s, %s, %s, %s, %s)
+                        INSERT INTO users
+                        (full_name, email, phone, gender, birthday, password_hash)
+                        VALUES (%s,%s,%s,%s,%s,%s)
                         """
+
                         cursor.execute(
                             sql,
-                            (full_name, email, phone, gender, birthday, password_hash),
+                            (
+                                full_name,
+                                email,
+                                phone,
+                                gender,
+                                birthday,
+                                password_hash,
+                            ),
                         )
+
                         conn.commit()
+
                         user_id = cursor.lastrowid
+
                         session["user_id"] = user_id
+
                         return redirect(url_for("index"))
+
             finally:
                 conn.close()
 
     return render_template("register.html", error=error, current_user=None)
 
 
+# ---------------- LOGIN ----------------
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     current_user = get_current_user()
+
     if current_user:
         return redirect(url_for("index"))
 
     error = None
 
     if request.method == "POST":
+
         email = request.form.get("email")
         password = request.form.get("password")
 
         conn = get_db_connection()
+
         try:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
                 user = cursor.fetchone()
+
         finally:
             conn.close()
 
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
             return redirect(url_for("index"))
+
         else:
             error = "Feil e-post eller passord."
 
@@ -251,8 +290,11 @@ def logout():
     session.clear()
     return redirect(url_for("index"))
 
+# ---------------- ADMIN LOGIN ----------------
+
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
+    # Если уже залогинен как админ → редирект
     if session.get("is_admin"):
         return redirect(url_for("admin_bookings"))
 
@@ -265,22 +307,41 @@ def admin_login():
         conn = get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+                cursor.execute(
+                    "SELECT * FROM users WHERE email = %s",
+                    (email,)
+                )
                 user = cursor.fetchone()
         finally:
             conn.close()
 
-        if user and check_password_hash(user["password_hash"], password):
-            if user["is_admin"] == 1:
-                session["admin_user_id"] = user["id"]
-                session["is_admin"] = True
-                return redirect(url_for("admin_bookings"))
-            else:
-                error = "You do not have admin access."
-        else:
+        # 🔥 ЛОГИКА ПРОВЕРКИ (чистая и безопасная)
+        if not user:
             error = "Invalid email or password."
 
-    return render_template("admin/login.html", error=error, current_user=None)
+        elif not check_password_hash(user["password_hash"], password):
+            error = "Invalid email or password."
+
+        elif user["is_admin"] != 1:
+            error = "You do not have admin access."
+
+        else:
+            # ✅ Успешный вход
+            session["admin_user_id"] = user["id"]
+            session["is_admin"] = True
+
+            return redirect(url_for("admin_bookings"))
+
+    return render_template("admin/login.html", error=error)
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("admin_user_id", None)
+    session.pop("is_admin", None)
+
+    return redirect(url_for("admin_login"))
+
+# ---------------- STATIC PAGES ----------------
 
 @app.route("/classes")
 def classes():
@@ -289,28 +350,26 @@ def classes():
 @app.route("/pricing")
 def pricing():
     current_user = get_current_user()
+
     return render_template("pricing.html", current_user=current_user)
 
 
-
-
-# ---------- БРОНИРОВАНИЕ ----------
+# ---------------- BOOKING ----------------
 
 @app.route("/book/<int:class_id>", methods=["GET", "POST"])
 @login_required
 def book(class_id):
-    """Бронирование: данные берём из профиля пользователя."""
+
     current_user = get_current_user()
-    if not current_user:
-        return redirect(url_for("login"))
 
     conn = get_db_connection()
+
     try:
         with conn.cursor() as cursor:
-            # получаем занятие + сколько мест занято
+
             cursor.execute(
                 """
-                SELECT 
+                SELECT
                     c.id,
                     c.title,
                     c.description,
@@ -326,18 +385,20 @@ def book(class_id):
                 """,
                 (class_id,),
             )
+
             yoga_class = cursor.fetchone()
 
             if not yoga_class:
                 return redirect(url_for("index"))
 
             if request.method == "POST":
-                # данные берём из профиля
+
                 full_name = current_user["full_name"]
                 email = current_user["email"]
                 phone = current_user.get("phone")
 
                 if yoga_class["booked_spots"] >= yoga_class["max_spots"]:
+
                     return render_template(
                         "full.html",
                         yoga_class=yoga_class,
@@ -345,13 +406,16 @@ def book(class_id):
                     )
 
                 insert_sql = """
-                    INSERT INTO bookings (class_id, user_id, full_name, email, phone)
-                    VALUES (%s, %s, %s, %s, %s);
+                INSERT INTO bookings
+                (class_id,user_id,full_name,email,phone)
+                VALUES (%s,%s,%s,%s,%s)
                 """
+
                 cursor.execute(
                     insert_sql,
                     (class_id, current_user["id"], full_name, email, phone),
                 )
+
                 conn.commit()
 
                 return render_template(
@@ -359,42 +423,47 @@ def book(class_id):
                     yoga_class=yoga_class,
                     current_user=current_user,
                 )
+
     finally:
         conn.close()
 
     return render_template("book.html", yoga_class=yoga_class, current_user=current_user)
 
 
-# ---------- МОИ ЗАНЯТИЯ / АДМИН ----------
+# ---------------- MY CLASSES ----------------
 
 @app.route("/my-classes")
 @login_required
 def my_classes():
-    """Страница из дизайна 'My membership' -> future + history."""
     current_user = get_current_user()
 
     conn = get_db_connection()
+
     try:
         with conn.cursor() as cursor:
+
             sql_future = """
-                SELECT b.*, c.title AS class_title, c.date, c.start_time
-                FROM bookings b
-                JOIN classes c ON c.id = b.class_id
-                WHERE b.user_id = %s AND c.date >= CURDATE()
-                ORDER BY c.date, c.start_time;
+            SELECT b.*, c.title AS class_title, c.date, c.start_time
+            FROM bookings b
+            JOIN classes c ON c.id = b.class_id
+            WHERE b.user_id = %s AND c.date >= CURDATE()
+            ORDER BY c.date, c.start_time
             """
+
             cursor.execute(sql_future, (current_user["id"],))
             future_classes = cursor.fetchall()
 
             sql_past = """
-                SELECT b.*, c.title AS class_title, c.date, c.start_time
-                FROM bookings b
-                JOIN classes c ON c.id = b.class_id
-                WHERE b.user_id = %s AND c.date < CURDATE()
-                ORDER BY c.date DESC, c.start_time DESC;
+            SELECT b.*, c.title AS class_title, c.date, c.start_time
+            FROM bookings b
+            JOIN classes c ON c.id = b.class_id
+            WHERE b.user_id = %s AND c.date < CURDATE()
+            ORDER BY c.date DESC, c.start_time DESC
             """
+
             cursor.execute(sql_past, (current_user["id"],))
             past_classes = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -406,30 +475,37 @@ def my_classes():
     )
 
 
+# ---------------- ADMIN BOOKINGS ----------------
+
 @app.route("/admin/bookings")
+@admin_required
 def admin_bookings():
-    """Простая админ-страница со всеми бронированиями."""
     current_user = get_current_user()
 
     conn = get_db_connection()
+
     try:
         with conn.cursor() as cursor:
+
             sql = """
-                SELECT 
-                    b.id,
-                    b.full_name,
-                    b.email,
-                    b.phone,
-                    b.created_at,
-                    c.title AS class_title,
-                    c.date AS class_date,
-                    c.start_time AS class_time
-                FROM bookings b
-                JOIN classes c ON c.id = b.class_id
-                ORDER BY b.created_at DESC;
+            SELECT
+                b.id,
+                b.full_name,
+                b.email,
+                b.phone,
+                b.created_at,
+                c.title AS class_title,
+                c.date AS class_date,
+                c.start_time AS class_time
+            FROM bookings b
+            JOIN classes c ON c.id = b.class_id
+            ORDER BY b.created_at DESC
             """
+
             cursor.execute(sql)
+
             bookings = cursor.fetchall()
+
     finally:
         conn.close()
 
@@ -440,76 +516,84 @@ def admin_bookings():
     )
 
 
+# ---------------- SCHEDULE ----------------
 
 @app.route("/schedule")
 def schedule():
-    """Полная страница расписания той же недели с фильтром по категориям."""
     current_user = get_current_user()
 
     today = dt.date.today()
+
     start_of_week = today - dt.timedelta(days=today.weekday())
     end_of_week = start_of_week + dt.timedelta(days=5)
 
-    # читаем выбранную категорию из URL-параметра: /schedule?category=prenatal
     current_category = request.args.get("category", "all")
 
     conn = get_db_connection()
+
     try:
         with conn.cursor() as cursor:
+
             sql = """
-                SELECT 
-                    c.id,
-                    c.title,
-                    c.description,
-                    c.date,
-                    c.start_time,
-                    c.duration_minutes,
-                    c.max_spots,
-                    c.level,
-                    c.category,
-                    COUNT(b.id) AS booked_spots
-                FROM classes c
-                LEFT JOIN bookings b ON b.class_id = c.id
-                WHERE c.date BETWEEN %s AND %s
-                GROUP BY c.id
-                ORDER BY c.date, c.start_time;
+            SELECT
+                c.id,
+                c.title,
+                c.description,
+                c.date,
+                c.start_time,
+                c.duration_minutes,
+                c.max_spots,
+                c.level,
+                c.category,
+                COUNT(b.id) AS booked_spots
+            FROM classes c
+            LEFT JOIN bookings b ON b.class_id = c.id
+            WHERE c.date BETWEEN %s AND %s
+            GROUP BY c.id
+            ORDER BY c.date, c.start_time
             """
+
             cursor.execute(sql, (start_of_week, end_of_week))
+
             classes = cursor.fetchall()
 
-            # считаем строковые времена для каждого занятия
             for cls in classes:
+
                 start_td = cls["start_time"]
                 duration = cls["duration_minutes"]
+
                 start_str, end_str = format_time_range(start_td, duration)
+
                 cls["start_time_str"] = start_str
                 cls["end_time_str"] = end_str
+
     finally:
         conn.close()
 
-    # все доступные категории (для фильтра)
     categories = sorted({c["category"] for c in classes})
 
-    # применяем фильтр категории (если не "all")
     if current_category != "all":
         filtered_classes = [c for c in classes if c["category"] == current_category]
     else:
         filtered_classes = classes
 
-    # группируем по дате
     classes_by_date = {}
+
     for cls in filtered_classes:
         d = cls["date"]
         classes_by_date.setdefault(d, []).append(cls)
 
-    # генерируем дни недели
     week_days = []
+
     for i in range(6):
         day_date = start_of_week + dt.timedelta(days=i)
-        week_days.append({
-            "date": day_date,
-            "weekday_label": day_date.strftime("%A"),
-        })
+
+        week_days.append(
+            {
+                "date": day_date,
+                "weekday_label": day_date.strftime("%A"),
+            }
+        )
 
     return render_template(
         "schedule.html",
@@ -521,10 +605,5 @@ def schedule():
     )
 
 
-
-
-
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
-
