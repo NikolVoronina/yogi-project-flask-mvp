@@ -216,9 +216,6 @@ is_admin = 1
 Admin login page:
 
 
-/admin/login
-
-
 Protected routes use a decorator:
 
 def admin_required(view):
@@ -270,8 +267,6 @@ View booking history
 
 Admin panel includes:
 
-
-/admin/login
 /admin/bookings
 
 

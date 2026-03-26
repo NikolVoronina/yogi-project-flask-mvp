@@ -138,10 +138,10 @@ def index():
     finally:
         conn.close()
 
-    # категории, которые есть на этой неделе
+    
     categories = sorted({c["category"] for c in classes})
 
-    # группируем по дате (без фильтра — всё на фронтенде)
+
     classes_by_date = {}
     for cls in classes:
         d = cls["date"]
@@ -165,10 +165,6 @@ def index():
         current_user=current_user,
     )
 
-
-
-
-# ---------- РЕГИСТРАЦИЯ / ЛОГИН / ЛОГАУТ ----------
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -251,8 +247,7 @@ def logout():
     session.clear()
     return redirect(url_for("index"))
 
-@app.route("/admin/login", methods=["GET", "POST"])
-def admin_login():
+
     if session.get("is_admin"):
         return redirect(url_for("admin_bookings"))
 
@@ -292,9 +287,6 @@ def pricing():
     return render_template("pricing.html", current_user=current_user)
 
 
-
-
-# ---------- БРОНИРОВАНИЕ ----------
 
 @app.route("/book/<int:class_id>", methods=["GET", "POST"])
 @login_required

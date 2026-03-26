@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Class</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f7f8f3, #eef5df);
+            color: #1e1e1e;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .page {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .brand small {
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+        }
+
+        .brand h1 {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .top-actions a {
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .btn-outline {
+            border: 1px solid #d6dfbc;
+            background: white;
+            color: #1e1e1e;
+        }
+
+        .btn-outline:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(186, 211, 65, 0.2);
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+            border-radius: 24px;
+            padding: 28px;
+            backdrop-filter: blur(6px);
+        }
+
+        .card-header {
+            margin-bottom: 24px;
+        }
+
+        .card-header h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .card-header p {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .message {
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 18px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .message.error {
+            background: #ffe7e7;
+            color: #9b1c1c;
+            border: 1px solid #f3b5b5;
+        }
+
+        .message.success {
+            background: #e9f8df;
+            color: #2d6a1f;
+            border: 1px solid #bade9f;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2a2a2a;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px 14px;
+            border: 1px solid #dcdcdc;
+            border-radius: 14px;
+            font-size: 15px;
+            background: #fff;
+            transition: 0.2s ease;
+            outline: none;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #bad341;
+            box-shadow: 0 0 0 4px rgba(186, 211, 65, 0.18);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #777;
+            margin-top: -2px;
+        }
+
+        .submit-btn {
+            border: none;
+            background: #bad341;
+            color: #1e1e1e;
+            padding: 15px 18px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+            margin-top: 6px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(186, 211, 65, 0.28);
+        }
+
+        .footer-note {
+            margin-top: 18px;
+            color: #666;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        @media (max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .brand h1 {
+                font-size: 26px;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 18px;
+            }
+
+            body {
+                padding: 20px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="topbar">
+            <div class="brand">
+                <small>Admin panel</small>
+                <h1>Create new class</h1>
+            </div>
+
+            <div class="top-actions">
+                <a href="{{ url_for('index') }}" class="btn-outline">Back to website</a>
+                <a href="{{ url_for('logout') }}" class="btn-outline">Log out</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Add a new yoga session</h2>
+                <p>Fill in the details below to create a new class directly from the admin panel.</p>
+            </div>
+
+            {% if error %}
+            <div class="message error">{{ error }}</div>
+            {% endif %}
+
+            {% if success %}
+            <div class="message success">{{ success }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <div class="grid">
+                    <div class="field full">
+                        <label for="title">Class title *</label>
+                        <input type="text" id="title" name="title" placeholder="Example: Morning Flow Yoga" required>
+                    </div>
+
+                    <div class="field full">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description"
+                            placeholder="Write a short description of the class..."></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label for="date">Date *</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="start_time">Start time *</label>
+                        <input type="time" id="start_time" name="start_time" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="duration_minutes">Duration in minutes *</label>
+                        <input type="number" id="duration_minutes" name="duration_minutes" min="1" placeholder="60"
+                            required>
+                    </div>
+
+                    <div class="field">
+                        <label for="max_spots">Max spots *</label>
+                        <input type="number" id="max_spots" name="max_spots" min="1" placeholder="15" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="level">Level</label>
+                        <input type="text" id="level" name="level" placeholder="Example: Beginner / All levels">
+                        <div class="hint">Leave empty to use default value.</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="category">Category</label>
+                        <input type="text" id="category" name="category"
+                            placeholder="Example: Yoga / Stretching / Meditation">
+                        <div class="hint">Leave empty to use default value.</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Create class</button>
+            </form>
+
+            <div class="footer-note">
+                Admins can create classes directly without using the terminal.
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

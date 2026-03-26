@@ -10,6 +10,7 @@ from flask import (
 import pymysql
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from flask import session, redirect, url_for
 import datetime as dt
 
 def format_time_range(start_td, duration_minutes):
@@ -39,6 +40,15 @@ app = Flask(__name__)
 # SECRET KEY для сессий
 
 app.secret_key = "super-secret-yogi-key"
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("is_admin"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # Параметры базы данных
 
@@ -83,18 +93,6 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if "user_id" not in session:
             return redirect(url_for("login"))
-        return view(**kwargs)
-
-    return wrapped_view
-
-
-def admin_required(view):
-    """Декоратор для админ страниц"""
-
-    @wraps(view)
-    def wrapped_view(**kwargs):
-        if not session.get("is_admin"):
-            return redirect(url_for("admin_login"))
         return view(**kwargs)
 
     return wrapped_view
@@ -256,90 +254,43 @@ def login():
     current_user = get_current_user()
 
     if current_user:
+        if session.get("is_admin"):
+            return redirect(url_for("admin_create_class"))
         return redirect(url_for("index"))
 
     error = None
 
     if request.method == "POST":
-
-        email = request.form.get("email")
-        password = request.form.get("password")
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
 
         conn = get_db_connection()
-
         try:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
                 user = cursor.fetchone()
-
         finally:
             conn.close()
 
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
+            session["is_admin"] = bool(user["is_admin"])
+
+            if user["is_admin"] == 1:
+                return redirect(url_for("admin_create_class"))
             return redirect(url_for("index"))
 
-        else:
-            error = "Feil e-post eller passord."
+        error = "Feil e-post eller passord."
 
     return render_template("login.html", error=error, current_user=None)
-
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("index"))
+    return redirect(url_for("login"))
 
-# ---------------- ADMIN LOGIN ----------------
 
-@app.route("/admin/login", methods=["GET", "POST"])
-def admin_login():
-    # Если уже залогинен как админ → редирект
-    if session.get("is_admin"):
-        return redirect(url_for("admin_bookings"))
 
-    error = None
-
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        conn = get_db_connection()
-        try:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    "SELECT * FROM users WHERE email = %s",
-                    (email,)
-                )
-                user = cursor.fetchone()
-        finally:
-            conn.close()
-
-        # 🔥 ЛОГИКА ПРОВЕРКИ (чистая и безопасная)
-        if not user:
-            error = "Invalid email or password."
-
-        elif not check_password_hash(user["password_hash"], password):
-            error = "Invalid email or password."
-
-        elif user["is_admin"] != 1:
-            error = "You do not have admin access."
-
-        else:
-            # ✅ Успешный вход
-            session["admin_user_id"] = user["id"]
-            session["is_admin"] = True
-
-            return redirect(url_for("admin_bookings"))
-
-    return render_template("admin/login.html", error=error)
-
-@app.route("/admin/logout")
-def admin_logout():
-    session.pop("admin_user_id", None)
-    session.pop("is_admin", None)
-
-    return redirect(url_for("admin_login"))
 
 # ---------------- STATIC PAGES ----------------
 
@@ -359,7 +310,6 @@ def pricing():
 @app.route("/book/<int:class_id>", methods=["GET", "POST"])
 @login_required
 def book(class_id):
-
     current_user = get_current_user()
 
     conn = get_db_connection()
@@ -476,7 +426,6 @@ def my_classes():
 
 
 # ---------------- ADMIN BOOKINGS ----------------
-
 @app.route("/admin/bookings")
 @admin_required
 def admin_bookings():
@@ -510,7 +459,7 @@ def admin_bookings():
         conn.close()
 
     return render_template(
-        "admin_bookings.html",
+        "admin/bookings.html",
         bookings=bookings,
         current_user=current_user,
     )
@@ -603,6 +552,57 @@ def schedule():
         categories=categories,
         current_category=current_category,
     )
+
+
+# ---------------- ADMIN CREATE CLASS ----------------
+
+@app.route("/admin/create_classes", methods=["GET", "POST"])
+@admin_required
+def admin_create_class():
+    error = None
+    success = None
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        date = request.form.get("date", "").strip()
+        start_time = request.form.get("start_time", "").strip()
+        duration_minutes = request.form.get("duration_minutes", "").strip()
+        max_spots = request.form.get("max_spots", "").strip()
+        level = request.form.get("level", "").strip()
+        category = request.form.get("category", "").strip()
+
+        if not title or not date or not start_time or not duration_minutes or not max_spots:
+            error = "Please fill in all required fields."
+        else:
+            conn = get_db_connection()
+            try:
+                with conn.cursor() as cursor:
+                    cursor.execute("""
+                        INSERT INTO classes
+                        (title, description, date, start_time, duration_minutes, max_spots, level, category)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """, (
+                        title,
+                        description,
+                        date,
+                        start_time,
+                        int(duration_minutes),
+                        int(max_spots),
+                        level if level else "All levels",
+                        category if category else "General"
+                    ))
+                    conn.commit()
+
+                success = "Class created successfully."
+
+            except Exception as e:
+                error = f"Database error: {e}"
+
+            finally:
+                conn.close()
+
+    return render_template("admin/create_classes.html", error=error, success=success)
 
 
 if __name__ == "__main__":

@@ -43,7 +43,8 @@
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     align-items: center;
-    gap: 40px; /* Увеличили расстояние между текстом и фото */
+    gap: 40px;
+    /* Увеличили расстояние между текстом и фото */
     margin-bottom: 55px;
   }
 
@@ -62,27 +63,63 @@
   }
 
   /* Gradient variations */
-  .grad-hatha     { background: linear-gradient(90deg, #f3eaff, #f2ffe7); }
-  .grad-vinyasa   { background: linear-gradient(90deg, #fee9f7, #f4f2ff); }
-  .grad-power     { background: linear-gradient(90deg, #f1ffd8, #f9ffe7); }
-  .grad-prenatal  { background: linear-gradient(90deg, #ffe8f2, #f3f0ff); }
-  .grad-strength  { background: linear-gradient(90deg, #fff7d5, #f8f0ff); }
+  .grad-hatha {
+    background: linear-gradient(90deg, #f3eaff, #f2ffe7);
+  }
+
+  .grad-vinyasa {
+    background: linear-gradient(90deg, #fee9f7, #f4f2ff);
+  }
+
+  .grad-power {
+    background: linear-gradient(90deg, #f1ffd8, #f9ffe7);
+  }
+
+  .grad-prenatal {
+    background: linear-gradient(90deg, #ffe8f2, #f3f0ff);
+  }
+
+  .grad-strength {
+    background: linear-gradient(90deg, #fff7d5, #f8f0ff);
+  }
 
   /* Text */
   .class-desc {
     font-size: 15px;
     color: #444;
     line-height: 1.55;
-    max-width: 370px; /* Текст не будет растягиваться слишком близко */
+    max-width: 370px;
+    /* Текст не будет растягиваться слишком близко */
   }
 
   /* Images */
   .class-image {
     width: 100%;
-    height: 260px; /* БОЛЬШИЕ ФОТО, КРАСИВО КАК НА РЕФЕРЕНСЕ */
+    height: 260px;
+    /* БОЛЬШИЕ ФОТО, КРАСИВО КАК НА РЕФЕРЕНСЕ */
     border-radius: 26px;
     background-size: cover;
     background-position: center;
+  }
+
+  .instructor-1 {
+    background-image: url('/static/img/instructor-1.jpg');
+  }
+
+  .instructor-2 {
+    background-image: url('/static/img/instructor-2.jpg');
+  }
+
+  .instructor-3 {
+    background-image: url('/static/img/instructor-3.jpg');
+  }
+
+  .instructor-4 {
+    background-image: url('/static/img/instructor-4.jpg');
+  }
+
+  .instructor-5 {
+    background-image: url('/static/img/instructor-5.jpg');
   }
 </style>
 
@@ -103,15 +140,13 @@
       </div>
     </div>
 
-    <div class="class-image"
-         style="background-image:url('{{ url_for('static', filename='img/instructor-1.jpg') }}');">
+    <div class="class-image instructor-1">
     </div>
   </div>
 
   <!-- Vinyasa Flow -->
   <div class="class-block reverse">
-    <div class="class-image"
-         style="background-image:url('{{ url_for('static', filename='img/instructor-2.jpg') }}');">
+    <div class="class-image instructor-2">
     </div>
 
     <div>
@@ -133,15 +168,13 @@
       </div>
     </div>
 
-    <div class="class-image"
-         style="background-image:url('{{ url_for('static', filename='img/instructor-3.jpg') }}');">
+    <div class="class-image instructor-3">
     </div>
   </div>
 
   <!-- Prenatal Yoga -->
   <div class="class-block reverse">
-    <div class="class-image"
-         style="background-image:url('{{ url_for('static', filename='img/instructor-4.jpg') }}');">
+    <div class="class-image instructor-4">
     </div>
 
     <div>
@@ -163,8 +196,7 @@
       </div>
     </div>
 
-    <div class="class-image"
-         style="background-image:url('{{ url_for('static', filename='img/instructor-5.jpg') }}');">
+    <div class="class-image instructor-5">
     </div>
   </div>
 
