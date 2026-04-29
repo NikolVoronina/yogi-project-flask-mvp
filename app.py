@@ -57,6 +57,105 @@ DB_USER = "yogi_user"
 DB_PASSWORD = "Yogi2025!"
 DB_NAME = "yogi"
 
+CLASS_CATEGORY_OPTIONS = [
+    {"value": "yoga", "label": "Yoga", "color": "green"},
+    {"value": "prenatal-yoga", "label": "Prenatal Yoga", "color": "pink"},
+    {"value": "stretching", "label": "Stretching", "color": "blue"},
+]
+
+CLASS_LEVEL_OPTIONS = [
+    {"value": "for-beginners", "label": "For beginners"},
+    {"value": "intermediate", "label": "Intermediate"},
+    {"value": "pro", "label": "Pro"},
+]
+
+CATEGORY_LOOKUP = {item["value"]: item for item in CLASS_CATEGORY_OPTIONS}
+LEVEL_LOOKUP = {item["value"]: item for item in CLASS_LEVEL_OPTIONS}
+
+CATEGORY_ALIASES = {
+    "yoga": "yoga",
+    "general": "yoga",
+    "prenatal": "prenatal-yoga",
+    "prental yoga": "prenatal-yoga",
+    "prenatal yoga": "prenatal-yoga",
+    "stretching": "stretching",
+}
+
+LEVEL_ALIASES = {
+    "for beginners": "for-beginners",
+    "beginner": "for-beginners",
+    "beginners": "for-beginners",
+    "all levels": "for-beginners",
+    "intermediate": "intermediate",
+    "pro": "pro",
+    "advanced": "pro",
+}
+
+BOOKING_NOTE_COLUMN_READY = False
+
+
+def normalize_category(value):
+    key = (value or "").strip().lower()
+    key = CATEGORY_ALIASES.get(key, key)
+    if key in CATEGORY_LOOKUP:
+        return key
+    return "yoga"
+
+
+def normalize_level(value):
+    key = (value or "").strip().lower()
+    key = LEVEL_ALIASES.get(key, key)
+    if key in LEVEL_LOOKUP:
+        return key
+    return "for-beginners"
+
+
+def enrich_class_record(cls):
+    category_key = normalize_category(cls.get("category"))
+    level_key = normalize_level(cls.get("level"))
+
+    cls["category"] = category_key
+    cls["level"] = level_key
+    cls["category_label"] = CATEGORY_LOOKUP[category_key]["label"]
+    cls["category_color"] = CATEGORY_LOOKUP[category_key]["color"]
+    cls["level_label"] = LEVEL_LOOKUP[level_key]["label"]
+    return cls
+
+
+def ensure_booking_note_column():
+    global BOOKING_NOTE_COLUMN_READY
+
+    if BOOKING_NOTE_COLUMN_READY:
+        return True
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 'bookings'
+                  AND COLUMN_NAME = 'booking_note'
+                """,
+                (DB_NAME,),
+            )
+            exists = cursor.fetchone()
+
+            if not exists:
+                cursor.execute("ALTER TABLE bookings ADD COLUMN booking_note TEXT NULL")
+                conn.commit()
+
+        BOOKING_NOTE_COLUMN_READY = True
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
 def get_db_connection():
     return pymysql.connect(
         host=DB_HOST,
@@ -142,11 +241,12 @@ def index():
 
                 cls["start_time_str"] = start_str
                 cls["end_time_str"] = end_str
+                enrich_class_record(cls)
 
     finally:
         conn.close()
 
-    categories = sorted({c["category"] for c in classes})
+    categories = CLASS_CATEGORY_OPTIONS
 
     classes_by_date = {}
 
@@ -255,7 +355,7 @@ def login():
 
     if current_user:
         if session.get("is_admin"):
-            return redirect(url_for("admin_create_class"))
+            return redirect(url_for("admin_classes"))
         return redirect(url_for("index"))
 
     error = None
@@ -277,7 +377,8 @@ def login():
             session["is_admin"] = bool(user["is_admin"])
 
             if user["is_admin"] == 1:
-                return redirect(url_for("admin_create_class"))
+                return redirect(url_for("admin_classes"))
+
             return redirect(url_for("index"))
 
         error = "Feil e-post eller passord."
@@ -346,6 +447,7 @@ def book(class_id):
                 full_name = current_user["full_name"]
                 email = current_user["email"]
                 phone = current_user.get("phone")
+                booking_note = request.form.get("booking_note", "").strip()
 
                 if yoga_class["booked_spots"] >= yoga_class["max_spots"]:
 
@@ -355,16 +457,26 @@ def book(class_id):
                         current_user=current_user,
                     )
 
-                insert_sql = """
-                INSERT INTO bookings
-                (class_id,user_id,full_name,email,phone)
-                VALUES (%s,%s,%s,%s,%s)
-                """
-
-                cursor.execute(
-                    insert_sql,
-                    (class_id, current_user["id"], full_name, email, phone),
-                )
+                if ensure_booking_note_column():
+                    insert_sql = """
+                    INSERT INTO bookings
+                    (class_id, user_id, full_name, email, phone, booking_note)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(
+                        insert_sql,
+                        (class_id, current_user["id"], full_name, email, phone, booking_note or None),
+                    )
+                else:
+                    insert_sql = """
+                    INSERT INTO bookings
+                    (class_id, user_id, full_name, email, phone)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(
+                        insert_sql,
+                        (class_id, current_user["id"], full_name, email, phone),
+                    )
 
                 conn.commit()
 
@@ -430,18 +542,22 @@ def my_classes():
 @admin_required
 def admin_bookings():
     current_user = get_current_user()
+    has_booking_note = ensure_booking_note_column()
 
     conn = get_db_connection()
 
     try:
         with conn.cursor() as cursor:
 
-            sql = """
+            note_column = "b.booking_note" if has_booking_note else "NULL AS booking_note"
+
+            sql = f"""
             SELECT
                 b.id,
                 b.full_name,
                 b.email,
                 b.phone,
+                {note_column},
                 b.created_at,
                 c.title AS class_title,
                 c.date AS class_date,
@@ -476,7 +592,8 @@ def schedule():
     start_of_week = today - dt.timedelta(days=today.weekday())
     end_of_week = start_of_week + dt.timedelta(days=5)
 
-    current_category = request.args.get("category", "all")
+    requested_category = request.args.get("category", "all")
+    current_category = "all" if requested_category == "all" else normalize_category(requested_category)
 
     conn = get_db_connection()
 
@@ -515,11 +632,12 @@ def schedule():
 
                 cls["start_time_str"] = start_str
                 cls["end_time_str"] = end_str
+                enrich_class_record(cls)
 
     finally:
         conn.close()
 
-    categories = sorted({c["category"] for c in classes})
+    categories = CLASS_CATEGORY_OPTIONS
 
     if current_category != "all":
         filtered_classes = [c for c in classes if c["category"] == current_category]
@@ -554,27 +672,66 @@ def schedule():
     )
 
 
+def get_admin_classes_data():
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    classes.*,
+                    COUNT(bookings.id) AS booking_count
+                FROM classes
+                LEFT JOIN bookings ON classes.id = bookings.class_id
+                GROUP BY classes.id
+                ORDER BY classes.date ASC, classes.start_time ASC
+            """)
+            classes = cursor.fetchall()
+            for yoga_class in classes:
+                enrich_class_record(yoga_class)
+            return classes
+    finally:
+        conn.close()
+
+
 # ---------------- ADMIN CREATE CLASS ----------------
 
-@app.route("/admin/create_classes", methods=["GET", "POST"])
+@app.route("/admin/create_classes")
 @admin_required
 def admin_create_class():
+    return redirect(url_for("admin_classes"))
+
+
+
+@app.route("/admin/classes", methods=["GET", "POST"])
+@admin_required
+def admin_classes():
+    current_user = get_current_user()
     error = None
     success = None
+    form_data = {
+        "title": "",
+        "description": "",
+        "date": "",
+        "start_time": "",
+        "duration_minutes": "",
+        "max_spots": "",
+        "level": CLASS_LEVEL_OPTIONS[0]["value"],
+        "category": CLASS_CATEGORY_OPTIONS[0]["value"],
+    }
 
     if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        description = request.form.get("description", "").strip()
-        date = request.form.get("date", "").strip()
-        start_time = request.form.get("start_time", "").strip()
-        duration_minutes = request.form.get("duration_minutes", "").strip()
-        max_spots = request.form.get("max_spots", "").strip()
-        level = request.form.get("level", "").strip()
-        category = request.form.get("category", "").strip()
+        for key in form_data:
+            form_data[key] = request.form.get(key, "").strip()
 
-        if not title or not date or not start_time or not duration_minutes or not max_spots:
+        if not form_data["title"] or not form_data["date"] or not form_data["start_time"] or not form_data["duration_minutes"] or not form_data["max_spots"]:
             error = "Please fill in all required fields."
+        elif normalize_category(form_data["category"]) not in CATEGORY_LOOKUP or normalize_level(form_data["level"]) not in LEVEL_LOOKUP:
+            error = "Please select valid category and level from the list."
         else:
+            normalized_category = normalize_category(form_data["category"])
+            normalized_level = normalize_level(form_data["level"])
+
             conn = get_db_connection()
             try:
                 with conn.cursor() as cursor:
@@ -583,18 +740,28 @@ def admin_create_class():
                         (title, description, date, start_time, duration_minutes, max_spots, level, category)
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
-                        title,
-                        description,
-                        date,
-                        start_time,
-                        int(duration_minutes),
-                        int(max_spots),
-                        level if level else "All levels",
-                        category if category else "General"
+                        form_data["title"],
+                        form_data["description"],
+                        form_data["date"],
+                        form_data["start_time"],
+                        int(form_data["duration_minutes"]),
+                        int(form_data["max_spots"]),
+                        normalized_level,
+                        normalized_category,
                     ))
                     conn.commit()
 
                 success = "Class created successfully."
+                form_data = {
+                    "title": "",
+                    "description": "",
+                    "date": "",
+                    "start_time": "",
+                    "duration_minutes": "",
+                    "max_spots": "",
+                    "level": CLASS_LEVEL_OPTIONS[0]["value"],
+                    "category": CLASS_CATEGORY_OPTIONS[0]["value"],
+                }
 
             except Exception as e:
                 error = f"Database error: {e}"
@@ -602,7 +769,80 @@ def admin_create_class():
             finally:
                 conn.close()
 
-    return render_template("admin/create_classes.html", error=error, success=success)
+    classes = get_admin_classes_data()
+
+    return render_template(
+        "admin/classes.html",
+        classes=classes,
+        current_user=current_user,
+        error=error,
+        success=success,
+        form_data=form_data,
+        category_options=CLASS_CATEGORY_OPTIONS,
+        level_options=CLASS_LEVEL_OPTIONS,
+    )
+
+
+@app.route("/admin/class/<int:class_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_class(class_id):
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("DELETE FROM bookings WHERE class_id = %s", (class_id,))
+            cursor.execute("DELETE FROM classes WHERE id = %s", (class_id,))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_classes"))
+
+
+
+@app.route("/admin/class/<int:class_id>/bookings")
+@admin_required
+def admin_class_bookings(class_id):
+    current_user = get_current_user()
+    has_booking_note = ensure_booking_note_column()
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM classes
+                WHERE id = %s
+            """, (class_id,))
+            yoga_class = cursor.fetchone()
+
+            note_column = "bookings.booking_note" if has_booking_note else "NULL AS booking_note"
+
+            cursor.execute(f"""
+                SELECT 
+                    users.full_name,
+                    users.email,
+                    users.phone,
+                    {note_column},
+                    bookings.created_at
+                FROM bookings
+                JOIN users ON bookings.user_id = users.id
+                WHERE bookings.class_id = %s
+                ORDER BY bookings.created_at DESC
+            """, (class_id,))
+            bookings = cursor.fetchall()
+
+    finally:
+        conn.close()
+
+    return render_template(
+        "admin/class_bookings.html",
+        yoga_class=yoga_class,
+        bookings=bookings,
+        current_user=current_user,
+    )
 
 
 if __name__ == "__main__":

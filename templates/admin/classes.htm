@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Classes</title>
+</head>
+<body>
+  <h1>All classes</h1>
+
+  <a href="{{ url_for('admin_create_class') }}">Create new class</a>
+
+  {% for class in classes %}
+    <div style="border: 1px solid #ddd; padding: 15px; margin: 15px 0;">
+      <h2>{{ class.title }}</h2>
+      <p>{{ class.date }} at {{ class.start_time }}</p>
+
+      <a href="{{ url_for('admin_class_bookings', class_id=class.id) }}">
+        View registered users
+      </a>
+    </div>
+  {% endfor %}
+</body>
+</html>

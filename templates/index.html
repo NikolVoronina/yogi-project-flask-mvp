@@ -38,6 +38,10 @@
     border-color: #f9a8d4;
   }
 
+  .filter-pill.stretching {
+    border-color: #93c5fd;
+  }
+
 
   .landing {
     color: var(--yogi-dark);
@@ -317,6 +321,11 @@
     border-color: #f0b8ee;
   }
 
+  .schedule-slot--blue {
+    background: #e8f2ff;
+    border-color: #bfd8ff;
+  }
+
   .schedule-slot-title {
     font-weight: 500;
     font-size: 11px;
@@ -361,6 +370,11 @@
   .dot-pink {
     background: #fbe8fb;
     border: 1px solid #f0b8ee;
+  }
+
+  .dot-blue {
+    background: #e8f2ff;
+    border: 1px solid #bfd8ff;
   }
 
   .dot-grey {
@@ -644,9 +658,9 @@
           {% for cat in categories %}
             <button
               type="button"
-              class="filter-pill{% if cat == 'prenatal' %} prenatal{% endif %}"
-              data-category="{{ cat }}">
-              {{ cat|capitalize }}
+              class="filter-pill{% if cat.value == 'prenatal-yoga' %} prenatal{% endif %}{% if cat.value == 'stretching' %} stretching{% endif %}"
+              data-category="{{ cat.value }}">
+              {{ cat.label }}
             </button>
           {% endfor %}
         </div>
@@ -669,8 +683,10 @@
               {% for cls in day_classes[:2] %}
 
                 {% set cls_color = 'schedule-slot--green' %}
-                {% if cls.category == 'prenatal' %}
+                {% if cls.category_color == 'pink' %}
                   {% set cls_color = 'schedule-slot--pink' %}
+                {% elif cls.category_color == 'blue' %}
+                  {% set cls_color = 'schedule-slot--blue' %}
                 {% endif %}
 
                 <div class="schedule-slot {{ cls_color }}" data-category="{{ cls.category }}">
@@ -681,10 +697,8 @@
                   </div>
 
                   <div style="font-size:10px; color:#555; margin-bottom:4px;">
-                    Level: {{ cls.level }}
-                    {% if cls.category == 'prenatal' %}
-                      · Prenatal
-                    {% endif %}
+                    Level: {{ cls.level_label }}
+                    · {{ cls.category_label }}
                     <br>
                     Spots: {{ cls.booked_spots }}/{{ cls.max_spots }}
                   </div>
@@ -710,8 +724,9 @@
 
       <!-- LEGEND -->
       <div class="schedule-legend">
-        <span><span class="legend-dot dot-green"></span>For everyone</span>
+        <span><span class="legend-dot dot-green"></span>Yoga</span>
         <span><span class="legend-dot dot-pink"></span>Prenatal yoga</span>
+        <span><span class="legend-dot dot-blue"></span>Stretching</span>
         <span><span class="legend-dot dot-grey"></span>Overbooked</span>
       </div>
     </div>

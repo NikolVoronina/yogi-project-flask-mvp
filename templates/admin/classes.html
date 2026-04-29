@@ -1,0 +1,686 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --yogi-green: #bad341;
+    --yogi-dark: #1e1e1e;
+    --yogi-pink: #d341c4;
+    --yogi-muted: #666666;
+  }
+
+  .admin-classes {
+    color: var(--yogi-dark);
+  }
+
+  .admin-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.9fr);
+    gap: 28px;
+    align-items: stretch;
+    margin-bottom: 34px;
+  }
+
+  .admin-hero-copy h1 {
+    font-size: 40px;
+    line-height: 1.08;
+    margin: 0 0 14px;
+    color: var(--yogi-green);
+  }
+
+  .admin-hero-copy p {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: var(--yogi-muted);
+    max-width: 560px;
+  }
+
+  .admin-hero-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .admin-main-cta,
+  .admin-secondary-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-size: 14px;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+  }
+
+  .admin-main-cta {
+    background: var(--yogi-green);
+    color: var(--yogi-dark);
+    box-shadow: 0 10px 22px rgba(186, 211, 65, 0.6);
+  }
+
+  .admin-main-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(186, 211, 65, 0.7);
+  }
+
+  .admin-secondary-cta {
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #4b5563;
+  }
+
+  .admin-secondary-cta:hover {
+    background: #f9fafb;
+  }
+
+  .admin-hero-panel {
+    border-radius: 32px;
+    padding: 24px;
+    background:
+      radial-gradient(circle at top left, rgba(186, 211, 65, 0.35), transparent 42%),
+      radial-gradient(circle at bottom right, rgba(211, 65, 196, 0.22), transparent 40%),
+      #111827;
+    color: #f9fafb;
+    display: grid;
+    gap: 18px;
+    align-content: space-between;
+    min-height: 260px;
+  }
+
+  .admin-panel-kicker {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(249, 250, 251, 0.72);
+  }
+
+  .admin-panel-metric {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--yogi-green);
+    margin: 0;
+  }
+
+  .admin-panel-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(249, 250, 251, 0.8);
+  }
+
+  .admin-panel-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .admin-panel-tag {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 7px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 12px;
+  }
+
+  .admin-section {
+    margin-bottom: 34px;
+  }
+
+  .admin-section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 18px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .admin-section-title .marker {
+    width: 54px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--yogi-green), var(--yogi-pink));
+    display: inline-block;
+  }
+
+  .admin-section-copy {
+    margin: 0 0 18px;
+    font-size: 14px;
+    color: var(--yogi-muted);
+    max-width: 680px;
+  }
+
+  .admin-dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+    gap: 22px;
+    align-items: start;
+  }
+
+  .admin-create-card,
+  .admin-list-card {
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    background: #fafafa;
+    padding: 22px;
+  }
+
+  .admin-create-card {
+    position: sticky;
+    top: 96px;
+    background:
+      radial-gradient(circle at top left, rgba(186, 211, 65, 0.16), transparent 42%),
+      linear-gradient(180deg, #ffffff, #f9fafb);
+  }
+
+  .admin-card-title {
+    margin: 0 0 8px;
+    font-size: 24px;
+  }
+
+  .admin-card-copy {
+    margin: 0 0 18px;
+    color: var(--yogi-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .admin-message {
+    padding: 14px 16px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .admin-message.error {
+    background: #ffe7e7;
+    color: #9b1c1c;
+    border: 1px solid #f3b5b5;
+  }
+
+  .admin-message.success {
+    background: #e9f8df;
+    color: #2d6a1f;
+    border: 1px solid #bade9f;
+  }
+
+  .admin-form {
+    display: grid;
+    gap: 16px;
+  }
+
+  .admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .admin-field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .admin-field.full {
+    grid-column: 1 / -1;
+  }
+
+  .admin-field label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2a2a2a;
+  }
+
+  .admin-field input,
+  .admin-field textarea,
+  .admin-field select {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #dcdcdc;
+    border-radius: 14px;
+    font-size: 14px;
+    background: #fff;
+    transition: 0.2s ease;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .admin-field input:focus,
+  .admin-field textarea:focus,
+  .admin-field select:focus {
+    border-color: var(--yogi-green);
+    box-shadow: 0 0 0 4px rgba(186, 211, 65, 0.18);
+  }
+
+  .admin-field textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+
+  .admin-hint {
+    font-size: 12px;
+    color: #777;
+  }
+
+  .admin-submit-btn {
+    border: none;
+    background: var(--yogi-green);
+    color: var(--yogi-dark);
+    padding: 15px 18px;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .admin-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(186, 211, 65, 0.28);
+  }
+
+  .admin-class-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .admin-class-card {
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background: #fafafa;
+    min-height: 220px;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .admin-class-card:nth-child(4n + 1) .admin-class-card-top {
+    background: linear-gradient(135deg, rgba(186, 211, 65, 0.22), rgba(186, 211, 65, 0.06));
+  }
+
+  .admin-class-card:nth-child(4n + 2) .admin-class-card-top {
+    background: linear-gradient(135deg, rgba(211, 65, 196, 0.18), rgba(255, 255, 255, 0.6));
+  }
+
+  .admin-class-card:nth-child(4n + 3) .admin-class-card-top {
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.92), rgba(31, 41, 55, 0.86));
+    color: #f9fafb;
+  }
+
+  .admin-class-card:nth-child(4n + 4) .admin-class-card-top {
+    background: linear-gradient(135deg, rgba(186, 211, 65, 0.16), rgba(211, 65, 196, 0.14));
+  }
+
+  .admin-class-card-top {
+    padding: 18px 18px 14px;
+  }
+
+  .admin-class-pill-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .admin-class-pill,
+  .admin-class-bookings {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    background: rgba(255, 255, 255, 0.78);
+    color: #374151;
+  }
+
+  .admin-category-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    border: 1px solid transparent;
+    background: #eef2ff;
+    color: #1f2937;
+  }
+
+  .admin-category-chip.green {
+    background: #f0f8d5;
+    border-color: #d9e88d;
+  }
+
+  .admin-category-chip.pink {
+    background: #fbe8fb;
+    border-color: #f0b8ee;
+  }
+
+  .admin-category-chip.blue {
+    background: #e8f2ff;
+    border-color: #bfd8ff;
+  }
+
+  .admin-class-card:nth-child(4n + 3) .admin-class-pill,
+  .admin-class-card:nth-child(4n + 3) .admin-class-bookings {
+    background: rgba(255, 255, 255, 0.08);
+    color: #f3f4f6;
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .admin-class-title {
+    margin: 0 0 8px;
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .admin-class-date {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.84;
+  }
+
+  .admin-class-card-body {
+    padding: 18px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .admin-class-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .admin-class-meta-item {
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    padding: 12px;
+  }
+
+  .admin-class-meta-label {
+    display: block;
+    font-size: 11px;
+    color: var(--yogi-muted);
+    margin-bottom: 4px;
+  }
+
+  .admin-class-meta-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--yogi-dark);
+  }
+
+  .admin-class-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .admin-class-footer-note {
+    font-size: 12px;
+    color: var(--yogi-muted);
+  }
+
+  .admin-class-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: #111827;
+    color: #f9fafb;
+    text-decoration: none;
+    font-size: 13px;
+  }
+
+  .admin-delete-form {
+    margin: 0;
+  }
+
+  .admin-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid #f3b5b5;
+    background: #fff4f4;
+    color: #9b1c1c;
+    padding: 10px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .admin-class-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .admin-empty-state {
+    border-radius: 24px;
+    border: 1px dashed #d1d5db;
+    padding: 28px;
+    background: linear-gradient(135deg, rgba(186, 211, 65, 0.12), rgba(211, 65, 196, 0.08));
+  }
+
+  .admin-empty-state h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .admin-empty-state p {
+    margin: 0;
+    color: var(--yogi-muted);
+    font-size: 14px;
+  }
+
+  @media (max-width: 900px) {
+    .admin-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-dashboard-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-create-card {
+      position: static;
+    }
+
+    .admin-class-meta {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .admin-hero-copy h1 {
+      font-size: 32px;
+    }
+
+    .admin-class-meta {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
+
+<div class="admin-classes">
+  <section class="admin-hero">
+    <div class="admin-hero-copy">
+      <h1>Admin classes overview</h1>
+      <p>
+        After login, the admin lands in one place to create sessions, review everything already scheduled, and remove classes that are no longer needed.
+      </p>
+      <div class="admin-hero-actions">
+        <a href="#create-class" class="admin-main-cta">Create new class</a>
+        <a href="{{ url_for('schedule') }}" class="admin-secondary-cta">Open public schedule</a>
+      </div>
+    </div>
+
+    <div class="admin-hero-panel">
+      <div>
+        <div class="admin-panel-kicker">Studio pulse</div>
+        <p class="admin-panel-metric">{{ classes|length }}</p>
+        <p class="admin-panel-text">
+          Active classes currently listed in the admin panel.
+        </p>
+      </div>
+
+      <div class="admin-panel-tags">
+        <span class="admin-panel-tag">Live booking counts</span>
+        <span class="admin-panel-tag">Fast attendee access</span>
+        <span class="admin-panel-tag">Same Yogi design language</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="admin-section">
+    <h2 class="admin-section-title"><span class="marker"></span> Upcoming classes</h2>
+    <p class="admin-section-copy">
+      Everything is on one screen now: add a session on the left, then immediately review or delete it from the live list on the right.
+    </p>
+
+    <div class="admin-dashboard-grid">
+      <div class="admin-create-card" id="create-class">
+        <h3 class="admin-card-title">Create a new yoga session</h3>
+        <p class="admin-card-copy">Fill in the class details here. Once you press create, the new class appears immediately in the list next to the form.</p>
+
+        {% if error %}
+          <div class="admin-message error">{{ error }}</div>
+        {% endif %}
+
+        {% if success %}
+          <div class="admin-message success">{{ success }}</div>
+        {% endif %}
+
+        <form method="POST" class="admin-form">
+          <div class="admin-form-grid">
+            <div class="admin-field full">
+              <label for="title">Class title *</label>
+              <input type="text" id="title" name="title" value="{{ form_data.title }}" placeholder="Example: Morning Flow Yoga" required>
+            </div>
+
+            <div class="admin-field full">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" placeholder="Write a short description of the class...">{{ form_data.description }}</textarea>
+            </div>
+
+            <div class="admin-field">
+              <label for="date">Date *</label>
+              <input type="date" id="date" name="date" value="{{ form_data.date }}" required>
+            </div>
+
+            <div class="admin-field">
+              <label for="start_time">Start time *</label>
+              <input type="time" id="start_time" name="start_time" value="{{ form_data.start_time }}" required>
+            </div>
+
+            <div class="admin-field">
+              <label for="duration_minutes">Duration in minutes *</label>
+              <input type="number" id="duration_minutes" name="duration_minutes" min="1" value="{{ form_data.duration_minutes }}" placeholder="60" required>
+            </div>
+
+            <div class="admin-field">
+              <label for="max_spots">Max spots *</label>
+              <input type="number" id="max_spots" name="max_spots" min="1" value="{{ form_data.max_spots }}" placeholder="15" required>
+            </div>
+
+            <div class="admin-field">
+              <label for="level">Level</label>
+              <select id="level" name="level" required>
+                {% for level in level_options %}
+                  <option value="{{ level.value }}" {% if form_data.level == level.value %}selected{% endif %}>{{ level.label }}</option>
+                {% endfor %}
+              </select>
+              <div class="admin-hint">Use ready-to-go levels: For beginners, Intermediate, Pro.</div>
+            </div>
+
+            <div class="admin-field">
+              <label for="category">Category</label>
+              <select id="category" name="category" required>
+                {% for category in category_options %}
+                  <option value="{{ category.value }}" {% if form_data.category == category.value %}selected{% endif %}>{{ category.label }}</option>
+                {% endfor %}
+              </select>
+              <div class="admin-hint">Categories are color-coded across schedule and admin cards.</div>
+            </div>
+          </div>
+
+          <button type="submit" class="admin-submit-btn">Create class</button>
+        </form>
+      </div>
+
+      <div class="admin-list-card">
+        {% if classes %}
+          <div class="admin-class-grid">
+            {% for yoga_class in classes %}
+              <article class="admin-class-card">
+                <div class="admin-class-card-top">
+                  <div class="admin-class-pill-row">
+                    <span class="admin-class-pill">Class #{{ yoga_class.id }}</span>
+                    <span class="admin-class-bookings">{{ yoga_class.booking_count }} booked</span>
+                    <span class="admin-category-chip {{ yoga_class.category_color }}">{{ yoga_class.category_label }}</span>
+                  </div>
+
+                  <h3 class="admin-class-title">{{ yoga_class.title }}</h3>
+                  <p class="admin-class-date">{{ yoga_class.date }} at {{ yoga_class.start_time }}</p>
+                </div>
+
+                <div class="admin-class-card-body">
+                  <div class="admin-class-meta">
+                    <div class="admin-class-meta-item">
+                      <span class="admin-class-meta-label">Capacity</span>
+                      <span class="admin-class-meta-value">{{ yoga_class.max_spots }}</span>
+                    </div>
+
+                    <div class="admin-class-meta-item">
+                      <span class="admin-class-meta-label">Level</span>
+                      <span class="admin-class-meta-value">{{ yoga_class.level_label }}</span>
+                    </div>
+
+                    <div class="admin-class-meta-item">
+                      <span class="admin-class-meta-label">Category</span>
+                      <span class="admin-class-meta-value">{{ yoga_class.category_label }}</span>
+                    </div>
+                  </div>
+
+                  <div class="admin-class-footer">
+                    <span class="admin-class-footer-note">Manage attendees, then remove the class when it is no longer active.</span>
+                    <div class="admin-class-actions">
+                      <a href="{{ url_for('admin_class_bookings', class_id=yoga_class.id) }}" class="admin-class-link">
+                        View registered users
+                      </a>
+
+                      <form method="POST" action="{{ url_for('admin_delete_class', class_id=yoga_class.id) }}" class="admin-delete-form">
+                        <button type="submit" class="admin-delete-btn">Delete class</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="admin-empty-state">
+            <h3>No classes yet</h3>
+            <p>Create the first class to start receiving bookings in the admin dashboard.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

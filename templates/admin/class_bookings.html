@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --yogi-green: #bad341;
+    --yogi-dark: #1e1e1e;
+    --yogi-pink: #d341c4;
+    --yogi-muted: #666666;
+  }
+
+  .class-bookings-page {
+    color: var(--yogi-dark);
+  }
+
+  .bookings-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+    gap: 18px;
+    margin-bottom: 24px;
+    align-items: stretch;
+  }
+
+  .bookings-header-main {
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    background: #fafafa;
+    padding: 20px;
+  }
+
+  .bookings-kicker {
+    margin: 0 0 8px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--yogi-muted);
+  }
+
+  .bookings-title {
+    margin: 0 0 10px;
+    font-size: 30px;
+    line-height: 1.12;
+    color: var(--yogi-green);
+  }
+
+  .bookings-subtitle {
+    margin: 0;
+    color: var(--yogi-muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .bookings-header-side {
+    border-radius: 24px;
+    padding: 20px;
+    background:
+      radial-gradient(circle at top left, rgba(186, 211, 65, 0.35), transparent 42%),
+      radial-gradient(circle at bottom right, rgba(211, 65, 196, 0.24), transparent 40%),
+      #111827;
+    color: #f9fafb;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+
+  .bookings-metric-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(249, 250, 251, 0.72);
+  }
+
+  .bookings-metric-value {
+    margin: 0;
+    font-size: 44px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--yogi-green);
+  }
+
+  .bookings-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .bookings-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    text-decoration: none;
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .bookings-link.main {
+    background: #111827;
+    color: #f9fafb;
+  }
+
+  .bookings-link.ghost {
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #4b5563;
+  }
+
+  .booking-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .booking-card {
+    border-radius: 22px;
+    border: 1px solid #e5e7eb;
+    background: #fafafa;
+    overflow: hidden;
+  }
+
+  .booking-card-head {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(186, 211, 65, 0.2), rgba(211, 65, 196, 0.12));
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .booking-card-name {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .booking-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 5px 9px;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(17, 24, 39, 0.1);
+  }
+
+  .booking-card-body {
+    padding: 14px 16px 16px;
+    display: grid;
+    gap: 8px;
+    font-size: 14px;
+    color: #374151;
+  }
+
+  .booking-card-body p {
+    margin: 0;
+  }
+
+  .booking-note {
+    margin-top: 4px;
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    color: #1f2937;
+  }
+
+  .bookings-empty {
+    border-radius: 24px;
+    border: 1px dashed #d1d5db;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(186, 211, 65, 0.12), rgba(211, 65, 196, 0.08));
+  }
+
+  .bookings-empty h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .bookings-empty p {
+    margin: 0;
+    color: var(--yogi-muted);
+    font-size: 14px;
+  }
+
+  @media (max-width: 920px) {
+    .bookings-header {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .booking-cards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
+
+<div class="class-bookings-page">
+  <div class="bookings-header">
+    <div class="bookings-header-main">
+      <p class="bookings-kicker">Class bookings</p>
+      <h1 class="bookings-title">Registered users</h1>
+      {% if yoga_class %}
+        <p class="bookings-subtitle">
+          {{ yoga_class.title }}<br>
+          {{ yoga_class.date }} at {{ yoga_class.start_time }}
+        </p>
+      {% endif %}
+    </div>
+
+    <div class="bookings-header-side">
+      <span class="bookings-metric-label">Total booked</span>
+      <p class="bookings-metric-value">{{ bookings|length }}</p>
+      <span class="bookings-metric-label">Live class attendance</span>
+    </div>
+  </div>
+
+  <div class="bookings-actions">
+    <a href="{{ url_for('admin_classes') }}" class="bookings-link main">Back to classes</a>
+    <a href="{{ url_for('schedule') }}" class="bookings-link ghost">Open schedule</a>
+  </div>
+
+  {% if bookings %}
+    <div class="booking-cards">
+      {% for booking in bookings %}
+        <article class="booking-card">
+          <div class="booking-card-head">
+            <h2 class="booking-card-name">{{ booking.full_name }}</h2>
+            <span class="booking-pill">{{ booking.created_at }}</span>
+          </div>
+
+          <div class="booking-card-body">
+            <p><strong>Email:</strong> {{ booking.email }}</p>
+            <p><strong>Phone:</strong> {{ booking.phone or "Not provided" }}</p>
+            {% if booking.booking_note %}
+              <div class="booking-note">
+                <strong>Note for admin:</strong><br>
+                {{ booking.booking_note }}
+              </div>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bookings-empty">
+      <h3>No users registered yet</h3>
+      <p>As soon as members book this class, they will appear here with contact details and optional notes.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
