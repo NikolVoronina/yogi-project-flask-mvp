@@ -250,7 +250,7 @@
     cursor: pointer;
   }
 
-  /* Schedule section – пока как статический блок */
+  /* Schedule */
   .schedule-card {
     border-radius: 24px;
     border: 1px solid #e5e7eb;
@@ -439,18 +439,61 @@
   }
 
   .faq-item {
-    border-radius: 999px;
-    padding: 10px 14px;
+    border-radius: 16px;
     background: linear-gradient(90deg, rgba(186, 211, 65, 0.15), rgba(211, 65, 196, 0.1));
     font-size: 13px;
+    overflow: hidden;
+    transition: border-radius 0.2s;
+  }
+
+  .faq-item.open {
+    border-radius: 16px;
+  }
+
+  .faq-trigger {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 10px 14px;
     cursor: pointer;
+    user-select: none;
+    border-radius: 999px;
+    transition: background 0.2s;
+  }
+
+  .faq-item.open .faq-trigger {
+    border-radius: 16px 16px 0 0;
+    background: linear-gradient(90deg, rgba(186, 211, 65, 0.25), rgba(211, 65, 196, 0.18));
   }
 
   .faq-item span.question {
     font-weight: 500;
+  }
+
+  .faq-chevron {
+    display: inline-block;
+    transition: transform 0.25s ease;
+    font-style: normal;
+    line-height: 1;
+    font-size: 16px;
+  }
+
+  .faq-item.open .faq-chevron {
+    transform: rotate(180deg);
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.2s ease;
+    padding: 0 14px;
+    color: #374151;
+    line-height: 1.5;
+  }
+
+  .faq-item.open .faq-answer {
+    max-height: 200px;
+    padding: 8px 14px 14px;
   }
 
   /* Reviews */
@@ -779,20 +822,32 @@
     </div>
     <div class="faq-list">
       <div class="faq-item">
-        <span class="question">How can I book a class?</span>
-        <span>⌄</span>
+        <div class="faq-trigger" onclick="toggleFaq(this)">
+          <span class="question">How can I book a class?</span>
+          <i class="faq-chevron">⌄</i>
+        </div>
+        <div class="faq-answer">Go to the Schedule page, pick a class that suits you, and tap Book. You'll need to be logged in — registration is free and takes under a minute.</div>
       </div>
       <div class="faq-item">
-        <span class="question">Do I need to bring my own mat?</span>
-        <span>⌄</span>
+        <div class="faq-trigger" onclick="toggleFaq(this)">
+          <span class="question">Do I need to bring my own mat?</span>
+          <i class="faq-chevron">⌄</i>
+        </div>
+        <div class="faq-answer">We have mats available at the studio, so you don't need to bring your own. If you prefer your personal mat, you're welcome to bring it.</div>
       </div>
       <div class="faq-item">
-        <span class="question">Can beginners join the classes?</span>
-        <span>⌄</span>
+        <div class="faq-trigger" onclick="toggleFaq(this)">
+          <span class="question">Can beginners join the classes?</span>
+          <i class="faq-chevron">⌄</i>
+        </div>
+        <div class="faq-answer">Absolutely! We have classes specifically labeled "For beginners" where the instructor will guide you through every pose at a comfortable pace.</div>
       </div>
       <div class="faq-item">
-        <span class="question">Do you have special classes for pregnancy?</span>
-        <span>⌄</span>
+        <div class="faq-trigger" onclick="toggleFaq(this)">
+          <span class="question">Do you have special classes for pregnancy?</span>
+          <i class="faq-chevron">⌄</i>
+        </div>
+        <div class="faq-answer">Yes! Our Prenatal Yoga classes are designed specifically for pregnant women and are safe at all trimesters. Always consult your doctor before starting any new physical activity.</div>
       </div>
     </div>
   </section>
@@ -845,6 +900,15 @@
     </div>
   </section>
 <script>
+  function toggleFaq(trigger) {
+    const item = trigger.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    // Close all open items
+    document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+    // Open clicked one if it wasn't already open
+    if (!isOpen) item.classList.add('open');
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     const filterPills = document.querySelectorAll('.schedule-filters .filter-pill');
     const slots = document.querySelectorAll('.schedule-slot');
