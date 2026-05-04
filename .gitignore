@@ -1,0 +1,19 @@
+# Environment variables — never commit secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Flask
+instance/
+
+# OS
+.DS_Store
+Thumbs.db

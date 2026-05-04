@@ -7,11 +7,15 @@ from flask import (
     session,
 )
 
+import os
 import pymysql
+from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from flask import session, redirect, url_for
 import datetime as dt
+
+load_dotenv()
 
 def format_time_range(start_td, duration_minutes):
     """
@@ -39,7 +43,7 @@ app = Flask(__name__)
 
 # SECRET KEY для сессий
 
-app.secret_key = "super-secret-yogi-key"
+app.secret_key = os.environ["SECRET_KEY"]
 
 
 def admin_required(f):
@@ -52,14 +56,14 @@ def admin_required(f):
 
 # Параметры базы данных
 
-DB_HOST = "localhost"
-DB_USER = "yogi_user"
-DB_PASSWORD = "Yogi2025!"
-DB_NAME = "yogi"
+DB_HOST = os.environ["DB_HOST"]
+DB_USER = os.environ["DB_USER"]
+DB_PASSWORD = os.environ["DB_PASSWORD"]
+DB_NAME = os.environ["DB_NAME"]
 
 CLASS_CATEGORY_OPTIONS = [
-    {"value": "yoga", "label": "Yoga", "color": "green"},
     {"value": "prenatal-yoga", "label": "Prenatal Yoga", "color": "pink"},
+    {"value": "yoga", "label": "Yoga", "color": "green"},
     {"value": "stretching", "label": "Stretching", "color": "blue"},
 ]
 
@@ -79,6 +83,12 @@ CATEGORY_ALIASES = {
     "prental yoga": "prenatal-yoga",
     "prenatal yoga": "prenatal-yoga",
     "stretching": "stretching",
+}
+
+SEARCH_CATEGORY_ORDER = {
+    "prenatal-yoga": 0,
+    "yoga": 1,
+    "stretching": 2,
 }
 
 LEVEL_ALIASES = {
@@ -120,6 +130,17 @@ def enrich_class_record(cls):
     cls["category_color"] = CATEGORY_LOOKUP[category_key]["color"]
     cls["level_label"] = LEVEL_LOOKUP[level_key]["label"]
     return cls
+
+
+def sort_classes_for_search(classes):
+    return sorted(
+        classes,
+        key=lambda cls: (
+            cls.get("date"),
+            SEARCH_CATEGORY_ORDER.get(cls.get("category"), 99),
+            cls.get("start_time"),
+        ),
+    )
 
 
 def ensure_booking_note_column():
@@ -242,6 +263,8 @@ def index():
                 cls["start_time_str"] = start_str
                 cls["end_time_str"] = end_str
                 enrich_class_record(cls)
+
+            classes = sort_classes_for_search(classes)
 
     finally:
         conn.close()
@@ -634,6 +657,8 @@ def schedule():
                 cls["end_time_str"] = end_str
                 enrich_class_record(cls)
 
+            classes = sort_classes_for_search(classes)
+
     finally:
         conn.close()
 
@@ -684,7 +709,10 @@ def get_admin_classes_data():
                 FROM classes
                 LEFT JOIN bookings ON classes.id = bookings.class_id
                 GROUP BY classes.id
-                ORDER BY classes.date ASC, classes.start_time ASC
+                ORDER BY
+                    FIELD(classes.category, 'yoga', 'prenatal-yoga', 'stretching'),
+                    classes.date ASC,
+                    classes.start_time ASC
             """)
             classes = cursor.fetchall()
             for yoga_class in classes:

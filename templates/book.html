@@ -134,6 +134,7 @@
     <p class="book-meta">
       Date: {{ yoga_class.date }}<br>
       Start: {{ yoga_class.start_time }}<br>
+      Description: {{ yoga_class.description or 'No description provided' }}<br>
       Spots: {{ yoga_class.booked_spots }} / {{ yoga_class.max_spots }}
     </p>
 

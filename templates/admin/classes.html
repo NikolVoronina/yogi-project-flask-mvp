@@ -219,6 +219,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
+    align-items: start;
   }
 
   .admin-field {
@@ -265,6 +266,28 @@
   .admin-hint {
     font-size: 12px;
     color: #777;
+    min-height: 32px;
+  }
+
+  .admin-quick-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .admin-quick-btn {
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .admin-quick-btn:hover {
+    background: #f8fafc;
   }
 
   .admin-submit-btn {
@@ -581,11 +604,20 @@
             <div class="admin-field">
               <label for="date">Date *</label>
               <input type="date" id="date" name="date" value="{{ form_data.date }}" required>
+              <div class="admin-quick-row">
+                <button type="button" class="admin-quick-btn" data-date-preset="today">Today</button>
+                <button type="button" class="admin-quick-btn" data-date-preset="tomorrow">Tomorrow</button>
+              </div>
             </div>
 
             <div class="admin-field">
               <label for="start_time">Start time *</label>
-              <input type="time" id="start_time" name="start_time" value="{{ form_data.start_time }}" required>
+              <input type="time" id="start_time" name="start_time" step="900" value="{{ form_data.start_time }}" required>
+              <div class="admin-quick-row">
+                <button type="button" class="admin-quick-btn" data-time-preset="08:00">08:00</button>
+                <button type="button" class="admin-quick-btn" data-time-preset="12:00">12:00</button>
+                <button type="button" class="admin-quick-btn" data-time-preset="18:00">18:00</button>
+              </div>
             </div>
 
             <div class="admin-field">
@@ -683,4 +715,38 @@
     </div>
   </section>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const dateInput = document.getElementById("date");
+    const timeInput = document.getElementById("start_time");
+
+    document.querySelectorAll("[data-date-preset]").forEach((button) => {
+      button.addEventListener("click", function () {
+        if (!dateInput) {
+          return;
+        }
+
+        const now = new Date();
+        if (button.dataset.datePreset === "tomorrow") {
+          now.setDate(now.getDate() + 1);
+        }
+
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const dd = String(now.getDate()).padStart(2, "0");
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+      });
+    });
+
+    document.querySelectorAll("[data-time-preset]").forEach((button) => {
+      button.addEventListener("click", function () {
+        if (!timeInput) {
+          return;
+        }
+        timeInput.value = button.dataset.timePreset;
+      });
+    });
+  });
+</script>
 {% endblock %}
