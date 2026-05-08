@@ -2,8 +2,9 @@
 
 ## Overview
 
-YOGI is a simple web application for managing a yoga studio.  
-It allows users to view and book classes, while admins can create classes directly from the website.
+YOGI is a full-featured web application for managing a yoga studio.  
+Users can browse classes, book sessions, and request private lessons.  
+Admins get a dedicated panel to manage classes, view bookings, and handle individual lesson requests.
 
 This project was developed as part of my IT studies.
 
@@ -12,23 +13,32 @@ This project was developed as part of my IT studies.
 ## Features
 
 ### User
-- Register and log in  
-- View available classes  
-- Book classes  
+- Register and log in securely
+- Browse available yoga classes
+- Book classes with an optional note
+- View personal booking history
+- Request a private (individual) lesson — choose a preferred date and instructor
+- View pricing plans
 
 ### Admin
-- Log in through the same login page  
-- Automatically redirected to admin panel  
-- Create new classes via web interface  
+- Log in via the same login page — automatically redirected to admin panel
+- Role-based navigation (admin sees different menu than regular users)
+- Create and manage classes (title, description, date, time, duration, instructor, spots)
+- View all bookings across all classes
+- View per-class booking lists
+- Manage private lesson requests — see status, mark as completed or pending
+- Dashboard with pending private request counter
 
 ---
 
 ## Tech Stack
 
-- Python (Flask)
-- MariaDB / MySQL
-- HTML, CSS
-- Jinja2
+- **Python** (Flask)
+- **MariaDB / MySQL** (via PyMySQL)
+- **HTML, CSS** (custom design system, no external UI framework)
+- **Jinja2** (templating)
+- **Werkzeug** (password hashing)
+- **python-dotenv** (environment config)
 
 ---
 
@@ -37,15 +47,30 @@ This project was developed as part of my IT studies.
 ```
 yogi/
 │
-├── app.py
+├── app.py                  # All routes, auth, DB logic, migrations
+├── wsgi.py                 # WSGI entry point
+├── requirements.txt
+│
 ├── templates/
-│   ├── login.html
+│   ├── base.html           # Shared layout, role-based navigation
 │   ├── index.html
+│   ├── login.html
+│   ├── register.html
+│   ├── classes.html
+│   ├── schedule.html
+│   ├── pricing.html
+│   ├── book.html
+│   ├── my_membership.html
+│   ├── private_request.html
 │   └── admin/
-│       └── create_classes.html
+│       ├── classes.html
+│       ├── create_classes.html
+│       ├── bookings.html
+│       ├── class_bookings.html
+│       └── admin_private_requests.html
 │
 ├── static/
-│   └── style.css
+│   └── img/
 │
 └── README.md
 ```
@@ -54,38 +79,30 @@ yogi/
 
 ## How It Works
 
-- The application is built with Flask  
-- Data is stored in a MariaDB database  
-- Passwords are hashed for security  
-- The system checks if a user is admin (`is_admin`)  
-- Admin users are redirected to the admin page  
+- Flask handles all routing and session management
+- Passwords are hashed with Werkzeug before storing in the database
+- `is_admin` flag in the user table controls access to admin routes
+- Decorators `@login_required` and `@admin_required` protect routes
+- Database schema evolves at runtime — new columns are added automatically on first request if missing
+- Private lesson requests are stored with a `status` field (`pending` / `completed`) and can be toggled by admins
 
 ---
 
-## What I Focused On
+## Design System
 
-- Connecting frontend and backend  
-- Working with a real database  
-- Handling login and sessions  
-- Building a simple admin system  
-- Keeping the interface clean and usable  
+- Custom CSS with CSS variables (`--yogi-green`, `--yogi-dark`, `--yogi-pink`, `--yogi-muted`)
+- Poppins font family
+- Consistent component patterns: pill badges, rounded cards, dark admin tables
+- No external UI frameworks (Bootstrap, Tailwind, etc.)
 
 ---
 
 ## What I Learned
 
-- Flask routing and structure  
-- SQL and database integration  
-- User authentication  
-- Form handling  
-- Basic UI/UX design  
-
----
-
-## Future Improvements
-
-- Edit and delete classes  
-- Display number of bookings  
-- Add calendar view  
-- Improve design  
-- Strengthen admin security  
+- Flask routing, blueprints, and application structure
+- SQL and relational database integration
+- Secure user authentication and session handling
+- Role-based access control with decorators
+- Form handling and server-side validation
+- Iterative feature development and UI/UX design
+- Runtime database migration patterns  
