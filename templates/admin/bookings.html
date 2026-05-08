@@ -1,34 +1,145 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{{ url_for('admin_create_class') }}" class="btn-primary">Create new class</a>
+<style>
+  :root {
+    --yogi-green: #bad341;
+    --yogi-dark: #1e1e1e;
+    --yogi-pink: #d341c4;
+    --yogi-muted: #666666;
+  }
 
-<div class="container">
-    <h1>Admin Bookings</h1>
+  .bk-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
 
-    {% if bookings %}
-        <table border="1" cellpadding="10" cellspacing="0">
-            <tr>
-                <th>ID</th>
-                <th>User</th>
-                <th>Email</th>
-                <th>Class</th>
-                <th>Date</th>
-                <th>Note</th>
-            </tr>
-            {% for booking in bookings %}
-            <tr>
-                <td>{{ booking.id }}</td>
-                <td>{{ booking.full_name }}</td>
-                <td>{{ booking.email }}</td>
-                <td>{{ booking.class_title }}</td>
-                <td>{{ booking.created_at }}</td>
-                <td>{{ booking.booking_note or '-' }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>No bookings found.</p>
-    {% endif %}
+  .bk-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--yogi-dark);
+  }
+
+  .bk-btn-create {
+    background: var(--yogi-green);
+    color: var(--yogi-dark);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .bk-btn-create:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(186, 211, 65, 0.3);
+  }
+
+  .bk-table-wrap {
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    overflow-x: auto;
+    background: #fafafa;
+  }
+
+  .bk-table {
+    width: 100%;
+    min-width: 700px;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .bk-table thead {
+    background: #111827;
+    color: #f9fafb;
+  }
+
+  .bk-table thead th {
+    padding: 11px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .bk-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.12s ease;
+  }
+
+  .bk-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .bk-table tbody tr:hover {
+    background: #f5f5f5;
+  }
+
+  .bk-table td {
+    padding: 11px 12px;
+    vertical-align: top;
+    color: #1f2937;
+  }
+
+  .bk-note {
+    max-width: 180px;
+    color: #4b5563;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .bk-empty {
+    padding: 48px;
+    text-align: center;
+    color: var(--yogi-muted);
+    font-size: 15px;
+  }
+</style>
+
+<div class="bk-header">
+  <h1>Bookings</h1>
+  <a href="{{ url_for('admin_create_class') }}" class="bk-btn-create">+ Create new class</a>
 </div>
+
+{% if bookings %}
+  <div class="bk-table-wrap">
+    <table class="bk-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Email</th>
+          <th>Class</th>
+          <th>Date</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+        <tr>
+          <td>{{ booking.id }}</td>
+          <td><strong>{{ booking.full_name }}</strong></td>
+          <td>{{ booking.email }}</td>
+          <td>{{ booking.class_title }}</td>
+          <td style="white-space:nowrap;">{{ booking.created_at }}</td>
+          <td class="bk-note">{% if booking.booking_note %}{{ booking.booking_note[:50] }}{% if booking.booking_note|length > 50 %}...{% endif %}{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="bk-table-wrap">
+    <div class="bk-empty">No bookings found.</div>
+  </div>
+{% endif %}
 {% endblock %}
