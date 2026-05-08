@@ -5,6 +5,7 @@ from flask import (
     redirect,
     url_for,
     session,
+    flash, 
 )
 
 import os
@@ -871,6 +872,36 @@ def admin_class_bookings(class_id):
         bookings=bookings,
         current_user=current_user,
     )
+
+
+#----------Request-user-individual-classes--------------
+@app.route("/private-request", methods=["GET", "POST"])
+def private_request():
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        message = request.form["message"]
+
+        conn = get_db_connection()
+
+        try:
+            with conn.cursor() as cursor:
+                sql = """
+                    INSERT INTO private_requests (name, email, message)
+                    VALUES (%s, %s, %s)
+                """
+                cursor.execute(sql, (name, email, message))
+                conn.commit()
+
+            flash("Forespørselen din er sendt! 🧘‍♀️")
+            return redirect(url_for("private_request"))
+
+        finally:
+            conn.close()
+
+    return render_template("private_request.html")
+
+    #-------------Request-admin-panel-individual-classes--------------
 
 
 if __name__ == "__main__":

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Individuell time</title>
+</head>
+<body>
+    <h1>Be om individuell yogatime 🧘‍♀️</h1>
+
+    <form method="POST">
+        <input type="text" name="name" placeholder="Navn" required><br><br>
+        <input type="email" name="email" placeholder="E-post" required><br><br>
+        <textarea name="message" placeholder="Hva slags time ønsker du?" required></textarea><br><br>
+
+        <button type="submit">Send forespørsel</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <p>{{ messages[0] }}</p>
+        {% endif %}
+    {% endwith %}
+
+</body>
+</html>
