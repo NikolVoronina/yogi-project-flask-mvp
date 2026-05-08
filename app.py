@@ -902,6 +902,32 @@ def private_request():
     return render_template("private_request.html")
 
     #-------------Request-admin-panel-individual-classes--------------
+@app.route("/admin/private-requests")
+def admin_private_requests():
+    current_user = get_current_user()
+
+    if not current_user or not current_user.get("is_admin"):
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            sql = """
+                SELECT id, name, email, message, created_at, status
+                FROM private_requests
+                ORDER BY created_at DESC
+            """
+            cursor.execute(sql)
+            requests_list = cursor.fetchall()
+
+    finally:
+        conn.close()
+
+    return render_template(
+        "admin/admin_private_requests.html",
+        requests_list=requests_list
+    )
 
 
 if __name__ == "__main__":
