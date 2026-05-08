@@ -42,8 +42,7 @@ def format_time_range(start_td, duration_minutes):
 
 app = Flask(__name__)
 
-# SECRET KEY для сессий
-
+# ---------- Admin key -------
 app.secret_key = os.environ["SECRET_KEY"]
 
 
@@ -55,7 +54,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Параметры базы данных
+# Data Base - eksempel 
 
 DB_HOST = os.environ["DB_HOST"]
 DB_USER = os.environ["DB_USER"]
