@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  :root {
+    --yogi-green: #bad341;
+    --yogi-dark: #1e1e1e;
+    --yogi-pink: #d341c4;
+    --yogi-muted: #666666;
+  }
+
+  .apr-hero {
+    margin-bottom: 28px;
+  }
+
+  .apr-hero h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 10px;
+    color: var(--yogi-dark);
+  }
+
+  .apr-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background:
+      radial-gradient(circle at top left, rgba(186, 211, 65, 0.35), transparent 60%),
+      #111827;
+    color: #f9fafb;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-size: 14px;
+  }
+
+  .apr-stats-count {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--yogi-green);
+  }
+
+  .apr-flash {
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 14px;
+    background: #e9f8df;
+    color: #2d6a1f;
+    border: 1px solid #bade9f;
+    margin-bottom: 20px;
+  }
+
+  .apr-table-wrap {
+    border-radius: 24px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    background: #fafafa;
+  }
+
+  .apr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .apr-table thead {
+    background: #111827;
+    color: #f9fafb;
+  }
+
+  .apr-table thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+
+  .apr-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.12s ease;
+  }
+
+  .apr-table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .apr-table tbody tr:hover {
+    background: #f5f5f5;
+  }
+
+  .apr-table td {
+    padding: 13px 16px;
+    vertical-align: top;
+    color: #1f2937;
+  }
+
+  .apr-message {
+    max-width: 260px;
+    color: #4b5563;
+    line-height: 1.5;
+  }
+
+  .apr-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .apr-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+
+  .apr-badge.completed {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+  }
+
+  .apr-status-form {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+  }
+
+  .apr-status-form select {
+    border: 1px solid #dcdcdc;
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .apr-status-form select:focus {
+    border-color: var(--yogi-green);
+    box-shadow: 0 0 0 3px rgba(186, 211, 65, 0.18);
+  }
+
+  .apr-update-btn {
+    border: none;
+    background: var(--yogi-green);
+    color: var(--yogi-dark);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+
+  .apr-update-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(186, 211, 65, 0.4);
+  }
+
+  .apr-empty {
+    padding: 48px;
+    text-align: center;
+    color: var(--yogi-muted);
+    font-size: 15px;
+  }
+</style>
+
+<div class="apr-hero">
+  <h1>Individuelle forespørsler</h1>
+  <div class="apr-stats">
+    <span>Nye forespørsler:</span>
+    <span class="apr-stats-count">{{ pending_count }}</span>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="apr-flash">{{ messages[0] }}</div>
+  {% endif %}
+{% endwith %}
+
+{% if requests_list %}
+  <div class="apr-table-wrap">
+    <table class="apr-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Navn</th>
+          <th>Email</th>
+          <th>Ønsket dag</th>
+          <th>Lærer</th>
+          <th>Melding</th>
+          <th>Opprettet</th>
+          <th>Status</th>
+          <th>Handling</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in requests_list %}
+        <tr>
+          <td>{{ req.id }}</td>
+          <td><strong>{{ req.name }}</strong></td>
+          <td>{{ req.email }}</td>
+          <td>{{ req.preferred_date or "—" }}</td>
+          <td>{{ req.teacher or "—" }}</td>
+          <td class="apr-message">{{ req.message }}</td>
+          <td style="white-space:nowrap; color:#6b7280;">{{ req.created_at }}</td>
+          <td>
+            {% set s = req.status or 'pending' %}
+            <span class="apr-badge {{ s }}">{{ 'Venter' if s == 'pending' else 'Fullført' }}</span>
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('admin_update_private_request_status', request_id=req.id) }}" class="apr-status-form">
+              <select name="status">
+                <option value="pending" {% if (req.status or 'pending') == 'pending' %}selected{% endif %}>Venter</option>
+                <option value="completed" {% if req.status == 'completed' %}selected{% endif %}>Fullført</option>
+              </select>
+              <button type="submit" class="apr-update-btn">Lagre</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="apr-table-wrap">
+    <div class="apr-empty">Ingen forespørsler enda 😴</div>
+  </div>
+{% endif %}
+{% endblock %}

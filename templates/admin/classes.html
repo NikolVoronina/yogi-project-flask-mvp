@@ -550,6 +550,9 @@
       <div class="admin-hero-actions">
         <a href="#create-class" class="admin-main-cta">Create new class</a>
         <a href="{{ url_for('schedule') }}" class="admin-secondary-cta">Open public schedule</a>
+        <a href="{{ url_for('admin_private_requests') }}" class="admin-secondary-cta">
+          Private requests{% if private_requests_pending_count %} ({{ private_requests_pending_count }} new){% endif %}
+        </a>
       </div>
     </div>
 

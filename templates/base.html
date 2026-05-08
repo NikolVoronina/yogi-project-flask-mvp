@@ -313,18 +313,39 @@
 
 
         <nav class="yogi-nav">
-          <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}yogi-nav-active{% endif %}">
-            Home
-          </a>
-          <a href="{{ url_for('classes') }}" class="{% if request.endpoint == 'classes' %}yogi-nav-active{% endif %}">
-            Classes
-          </a>
-          <a href="{{ url_for('pricing') }}" class="{% if request.endpoint == 'pricing' %}yogi-nav-active{% endif %}">
-            Pricing
-          </a>
-          <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}yogi-nav-active{% endif %}">
-            Schedule
-          </a>
+          {% if current_user and current_user.is_admin %}
+            <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}yogi-nav-active{% endif %}">
+              Home
+            </a>
+            <a href="{{ url_for('admin_classes') }}" class="{% if request.endpoint == 'admin_classes' %}yogi-nav-active{% endif %}">
+              Classes
+            </a>
+            <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}yogi-nav-active{% endif %}">
+              Schedule
+            </a>
+            <a href="{{ url_for('admin_bookings') }}" class="{% if request.endpoint == 'admin_bookings' %}yogi-nav-active{% endif %}">
+              Bookings
+            </a>
+            <a href="{{ url_for('admin_private_requests') }}" class="{% if request.endpoint == 'admin_private_requests' %}yogi-nav-active{% endif %}">
+              Private Requests
+            </a>
+          {% else %}
+            <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}yogi-nav-active{% endif %}">
+              Home
+            </a>
+            <a href="{{ url_for('classes') }}" class="{% if request.endpoint == 'classes' %}yogi-nav-active{% endif %}">
+              Classes
+            </a>
+            <a href="{{ url_for('pricing') }}" class="{% if request.endpoint == 'pricing' %}yogi-nav-active{% endif %}">
+              Pricing
+            </a>
+            <a href="{{ url_for('schedule') }}" class="{% if request.endpoint == 'schedule' %}yogi-nav-active{% endif %}">
+              Schedule
+            </a>
+            <a href="{{ url_for('private_request') }}" class="{% if request.endpoint == 'private_request' %}yogi-nav-active{% endif %}">
+              Individual classes
+            </a>
+          {% endif %}
         </nav>
 
         <div class="yogi-user-pill">

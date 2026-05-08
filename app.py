@@ -103,6 +103,15 @@ LEVEL_ALIASES = {
 }
 
 BOOKING_NOTE_COLUMN_READY = False
+PRIVATE_REQUEST_PREFERRED_DATE_READY = False
+PRIVATE_REQUEST_TEACHER_COLUMN_READY = False
+
+TEACHERS = [
+    "Mette – Mindful Yoga Guide",
+    "Lina Berg – Prenatal Yoga Specialist",
+    "Maya Solberg – Vinyasa Flow Expert",
+    "Milla Mackiee – Strength & Stretch Coach",
+]
 
 
 def normalize_category(value):
@@ -175,6 +184,94 @@ def ensure_booking_note_column():
     except Exception:
         conn.rollback()
         return False
+    finally:
+        conn.close()
+
+
+def ensure_private_request_preferred_date_column():
+    global PRIVATE_REQUEST_PREFERRED_DATE_READY
+
+    if PRIVATE_REQUEST_PREFERRED_DATE_READY:
+        return True
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 'private_requests'
+                  AND COLUMN_NAME = 'preferred_date'
+                """,
+                (DB_NAME,),
+            )
+            exists = cursor.fetchone()
+
+            if not exists:
+                cursor.execute("ALTER TABLE private_requests ADD COLUMN preferred_date DATE NULL")
+                conn.commit()
+
+        PRIVATE_REQUEST_PREFERRED_DATE_READY = True
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+def ensure_private_request_teacher_column():
+    global PRIVATE_REQUEST_TEACHER_COLUMN_READY
+
+    if PRIVATE_REQUEST_TEACHER_COLUMN_READY:
+        return True
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 'private_requests'
+                  AND COLUMN_NAME = 'teacher'
+                """,
+                (DB_NAME,),
+            )
+            exists = cursor.fetchone()
+
+            if not exists:
+                cursor.execute("ALTER TABLE private_requests ADD COLUMN teacher VARCHAR(255) NULL")
+                conn.commit()
+
+        PRIVATE_REQUEST_TEACHER_COLUMN_READY = True
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+def get_pending_private_requests_count():
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS pending_count
+                FROM private_requests
+                WHERE status IS NULL OR status IN ('new', 'pending')
+                """
+            )
+            row = cursor.fetchone() or {}
+            return row.get("pending_count", 0)
     finally:
         conn.close()
 
@@ -799,6 +896,7 @@ def admin_classes():
                 conn.close()
 
     classes = get_admin_classes_data()
+    private_requests_pending_count = get_pending_private_requests_count()
 
     return render_template(
         "admin/classes.html",
@@ -809,6 +907,7 @@ def admin_classes():
         form_data=form_data,
         category_options=CLASS_CATEGORY_OPTIONS,
         level_options=CLASS_LEVEL_OPTIONS,
+        private_requests_pending_count=private_requests_pending_count,
     )
 
 
@@ -876,21 +975,43 @@ def admin_class_bookings(class_id):
 
 #----------Request-user-individual-classes--------------
 @app.route("/private-request", methods=["GET", "POST"])
+@login_required
 def private_request():
+    current_user = get_current_user()
+
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
+        name = current_user.get("full_name") or ""
+        email = current_user["email"]
+        preferred_date = request.form.get("preferred_date")
+        teacher = request.form.get("teacher", "").strip()
         message = request.form["message"]
+
+        if not preferred_date:
+            flash("Velg ønsket dato for timen.")
+            return redirect(url_for("private_request"))
+
+        if teacher not in TEACHERS:
+            flash("Velg en gyldig lærer fra listen.")
+            return redirect(url_for("private_request"))
 
         conn = get_db_connection()
 
         try:
             with conn.cursor() as cursor:
-                sql = """
-                    INSERT INTO private_requests (name, email, message)
-                    VALUES (%s, %s, %s)
-                """
-                cursor.execute(sql, (name, email, message))
+                ensure_private_request_preferred_date_column()
+                has_teacher_col = ensure_private_request_teacher_column()
+                if has_teacher_col:
+                    sql = """
+                        INSERT INTO private_requests (name, email, message, preferred_date, teacher, status)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(sql, (name, email, message, preferred_date, teacher, "pending"))
+                else:
+                    sql = """
+                        INSERT INTO private_requests (name, email, message, preferred_date, status)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(sql, (name, email, message, preferred_date, "pending"))
                 conn.commit()
 
             flash("Forespørselen din er sendt! 🧘‍♀️")
@@ -899,9 +1020,9 @@ def private_request():
         finally:
             conn.close()
 
-    return render_template("private_request.html")
+    return render_template("private_request.html", current_user=current_user, teachers=TEACHERS)
 
-    #-------------Request-admin-panel-individual-classes--------------
+
 @app.route("/admin/private-requests")
 def admin_private_requests():
     current_user = get_current_user()
@@ -910,24 +1031,64 @@ def admin_private_requests():
         return redirect(url_for("login"))
 
     conn = get_db_connection()
+    has_preferred_date = ensure_private_request_preferred_date_column()
+
+    has_teacher = ensure_private_request_teacher_column()
 
     try:
         with conn.cursor() as cursor:
+            preferred_date_column = "preferred_date" if has_preferred_date else "NULL AS preferred_date"
+            teacher_column = "teacher" if has_teacher else "NULL AS teacher"
             sql = """
-                SELECT id, name, email, message, created_at, status
+                SELECT id, name, email, message, created_at, status, {preferred_date_column}, {teacher_column}
                 FROM private_requests
                 ORDER BY created_at DESC
-            """
+            """.format(preferred_date_column=preferred_date_column, teacher_column=teacher_column)
             cursor.execute(sql)
             requests_list = cursor.fetchall()
 
     finally:
         conn.close()
 
+    pending_count = sum(1 for req in requests_list if not req.get("status") or req.get("status") in ("new", "pending"))
+
     return render_template(
         "admin/admin_private_requests.html",
-        requests_list=requests_list
+        requests_list=requests_list,
+        pending_count=pending_count,
+        current_user=current_user,
     )
+
+#-------------Request-admin-panel-individual-classes-------------- 
+@app.route("/admin/private-requests/<int:request_id>/status", methods=["POST"])
+@admin_required
+def admin_update_private_request_status(request_id):
+    new_status = request.form.get("status", "pending").strip().lower()
+    allowed_statuses = {"pending", "completed"}
+
+    if new_status not in allowed_statuses:
+        flash("Ugyldig status valgt.")
+        return redirect(url_for("admin_private_requests"))
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE private_requests
+                SET status = %s
+                WHERE id = %s
+                """,
+                (new_status, request_id),
+            )
+        conn.commit()
+        flash("Status oppdatert.")
+
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_private_requests"))
 
 
 if __name__ == "__main__":
