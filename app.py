@@ -1172,7 +1172,7 @@ def admin_users():
     )
 
 
-@app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
+@app.route("/admin/users/<int:user_id>/delete", methods=["POST"]) #users-panel for Admin
 @admin_required
 def admin_delete_user(user_id):
     current_user = get_current_user()
@@ -1181,7 +1181,7 @@ def admin_delete_user(user_id):
         return redirect(url_for("login"))
 
     if current_user["id"] == user_id:
-        flash("You cannot delete your own administrator account.", "error")
+        flash("Impossible delete own account", "error")
         return redirect(url_for("admin_users"))
 
     conn = get_db_connection()
