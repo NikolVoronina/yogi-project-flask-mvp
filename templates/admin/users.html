@@ -47,7 +47,6 @@
       <h1 class="h3 mb-1">Users Administration</h1>
       <p class="text-muted mb-0">Manage registered users and remove accounts if needed.</p>
     </div>
-    <span class="badge text-bg-dark">Total users: {{ users|length }}</span>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -75,7 +74,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for user in users %}
+            {% for user in users %} <!-- Henter fra DB, describe user... -->
               <tr>
                 <td>{{ user.id }}</td>
                 <td>{{ user.full_name }}</td>
