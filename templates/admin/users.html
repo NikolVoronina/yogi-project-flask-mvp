@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --yogi-green: #bad341;
+    --yogi-dark: #1e1e1e;
+    --yogi-pink: #d341c4;
+  }
+
+  .admin-btn-delete {
+    background: linear-gradient(135deg, var(--yogi-pink), #b12fa5);
+    border: 1px solid #a32997;
+    color: #fff;
+    border-radius: 999px;
+    padding-inline: 14px;
+    font-weight: 600;
+    transition: transform 0.08s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+
+  .admin-btn-delete:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(211, 65, 196, 0.35);
+    filter: brightness(1.03);
+    color: #fff;
+  }
+
+  .admin-btn-delete:focus-visible {
+    box-shadow: 0 0 0 0.25rem rgba(186, 211, 65, 0.35);
+  }
+
+  .admin-btn-disabled {
+    border-radius: 999px;
+    border: 1px solid #d6d8dd;
+    color: #7c8393;
+    background: #f6f7f9;
+    padding-inline: 14px;
+    font-weight: 500;
+  }
+</style>
+
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Users Administration</h1>
+      <p class="text-muted mb-0">Manage registered users and remove accounts if needed.</p>
+    </div>
+    <span class="badge text-bg-dark">Total users: {{ users|length }}</span>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert {% if category == 'success' %}alert-success{% else %}alert-danger{% endif %} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0 align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Role</th>
+              <th scope="col" class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.full_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                  {% if user.is_admin %}
+                    <span class="badge text-bg-warning">Administrator</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary">User</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if current_user.id == user.id %}
+                    <button type="button" class="btn btn-sm admin-btn-disabled" disabled title="You cannot delete yourself">
+                      Delete
+                    </button>
+                  {% else %}
+                  <!-- Eksempel jeg kan vise til læreren -->
+                    <form method="post" action="{{ url_for('admin_delete_user', user_id=user.id) }}" class="d-inline"
+                          onsubmit="return confirm('Are you sure you want to delete this user?');">
+                      <button type="submit" class="btn btn-sm admin-btn-delete">Delete</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">No users found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

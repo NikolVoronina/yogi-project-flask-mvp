@@ -337,6 +337,9 @@
             <a href="{{ url_for('admin_bookings') }}" class="{% if request.endpoint == 'admin_bookings' %}yogi-nav-active{% endif %}">
               Bookings
             </a>
+            <a href="{{ url_for('admin_users') }}" class="{% if request.endpoint == 'admin_users' %}yogi-nav-active{% endif %}">
+              Users
+            </a>
             <a href="{{ url_for('admin_private_requests') }}" class="{% if request.endpoint == 'admin_private_requests' %}yogi-nav-active{% endif %}">
               Private Requests
             </a>

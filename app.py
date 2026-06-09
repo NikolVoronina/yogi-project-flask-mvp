@@ -1146,6 +1146,68 @@ def get_avatar(filename):
 
 
 # ---------------- ADMIN BOOKINGS ----------------
+@app.route("/admin/users")
+@admin_required
+def admin_users():
+    current_user = get_current_user()
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, full_name, email, is_admin
+                FROM users
+                ORDER BY id ASC
+                """
+            )
+            users = cursor.fetchall()
+    finally:
+        conn.close()
+
+    return render_template(
+        "admin/users.html",
+        current_user=current_user,
+        users=users,
+    )
+
+
+@app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
+@admin_required
+def admin_delete_user(user_id):
+    current_user = get_current_user()
+
+    if not current_user:
+        return redirect(url_for("login"))
+
+    if current_user["id"] == user_id:
+        flash("You cannot delete your own administrator account.", "error")
+        return redirect(url_for("admin_users"))
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+            user = cursor.fetchone()
+
+            if not user:
+                flash("User not found.", "error")
+                return redirect(url_for("admin_users"))
+
+            cursor.execute("DELETE FROM bookings WHERE user_id = %s", (user_id,))
+            cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+        flash("User deleted successfully.", "success")
+    except Exception:
+        conn.rollback()
+        flash("Failed to delete user.", "error")
+    finally:
+        conn.close()
+
+    return redirect(url_for("admin_users"))
+
+
+# ---------------- ADMIN BOOKINGS ----------------
 @app.route("/admin/bookings")
 @admin_required
 def admin_bookings():
