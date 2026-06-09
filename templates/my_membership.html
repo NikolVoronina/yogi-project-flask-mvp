@@ -100,6 +100,35 @@
         text-decoration: none;
         color: var(--yogi-dark);
         font-size: 14px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .book-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(186, 211, 65, 0.3);
+    }
+
+    .edit-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 30px;
+        border-radius: 999px;
+        border: 1px solid var(--yogi-green);
+        background: white;
+        color: var(--yogi-green);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .edit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(186, 211, 65, 0.2);
     }
 
     /* Section titles */
@@ -140,6 +169,255 @@
         border-radius: 22px;
         font-size: 14px;
     }
+
+    /* Payment packages */
+    .payment-packages {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .payment-pkg {
+        border: 2px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .payment-pkg:hover {
+        border-color: var(--yogi-green);
+        box-shadow: 0 4px 12px rgba(186, 211, 65, 0.2);
+    }
+
+    .payment-pkg.selected {
+        border-color: var(--yogi-green);
+        background: rgba(186, 211, 65, 0.06);
+    }
+
+    .payment-pkg-lessons {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--yogi-green);
+        margin-bottom: 4px;
+    }
+
+    .payment-pkg-label {
+        font-size: 12px;
+        color: var(--yogi-muted);
+        margin-bottom: 8px;
+    }
+
+    .payment-pkg-price {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .payment-form {
+        background: #f9fafb;
+        border: 2px dashed #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .payment-form h3 {
+        margin-top: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .payment-fields {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .payment-fields input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #dcdcdc;
+        border-radius: 8px;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
+
+    .payment-fields input:focus {
+        outline: none;
+        border-color: var(--yogi-green);
+        box-shadow: 0 0 0 3px rgba(186, 211, 65, 0.15);
+    }
+
+    .payment-fields-full {
+        grid-column: 1 / -1;
+    }
+
+    .payment-submit {
+        width: 100%;
+        padding: 12px;
+        background: var(--yogi-green);
+        color: var(--yogi-dark);
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .payment-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(186, 211, 65, 0.3);
+    }
+
+    .payment-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .payment-note {
+        font-size: 11px;
+        color: var(--yogi-muted);
+        margin-top: 12px;
+        text-align: center;
+    }
+
+    /* Edit profile section */
+    .edit-profile-section {
+        background: #f9fafb;
+        border: 2px dashed #e5e7eb;
+        border-radius: 16px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .edit-profile-section h3 {
+        margin-top: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .profile-form {
+        display: grid;
+        gap: 14px;
+    }
+
+    .profile-form-group {
+        display: grid;
+        gap: 6px;
+    }
+
+    .profile-form-group label {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--yogi-muted);
+    }
+
+    .profile-form-group input,
+    .profile-form-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #dcdcdc;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    .profile-form-group input:focus,
+    .profile-form-group textarea:focus {
+        outline: none;
+        border-color: var(--yogi-green);
+        box-shadow: 0 0 0 3px rgba(186, 211, 65, 0.15);
+    }
+
+    .avatar-upload-wrapper {
+        display: grid;
+        gap: 12px;
+    }
+
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 12px;
+        border: 2px solid #dcdcdc;
+        background: #fafafa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: var(--yogi-muted);
+        overflow: hidden;
+    }
+
+    .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-input-label {
+        display: inline-block;
+        padding: 8px 14px;
+        background: white;
+        border: 1px solid #dcdcdc;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .avatar-input-label:hover {
+        border-color: var(--yogi-green);
+        background: rgba(186, 211, 65, 0.06);
+    }
+
+    #avatarInput {
+        display: none;
+    }
+
+    .profile-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .profile-btn {
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+        font-family: inherit;
+    }
+
+    .profile-btn-save {
+        background: var(--yogi-green);
+        color: var(--yogi-dark);
+    }
+
+    .profile-btn-save:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(186, 211, 65, 0.3);
+    }
+
+    .profile-btn-cancel {
+        background: #e5e7eb;
+        color: #1f2937;
+    }
+
+    .profile-btn-cancel:hover {
+        background: #d1d5db;
+    }
 </style>
 
 <div class="membership-wrapper">
@@ -154,14 +432,12 @@
     <div class="top-card">
 
         <!-- Progress circle -->
-        {% set used = past_classes|length %}
-        {% set total = 10 %}
-        {% set percent = (used / total * 100) | int %}
+        {% set remaining = lesson_credits or 0 %}
 
-        <div class="progress-circle" style="--percent: {{ percent }}">
+        <div class="progress-circle" style="--percent: {{ (remaining / 20 * 100) | int }}">
             <div class="progress-circle-inner">
-                {{ used }}/{{ total }}
-                <span>Lessons used</span>
+                {{ remaining }} Credits
+                <span>Available</span>
             </div>
         </div>
 
@@ -174,7 +450,10 @@
             {% endif %}
             <div>Oslo, Norway</div>
 
-            <a href="{{ url_for('index') }}#schedule" class="book-btn">Book classes</a>
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                <a href="{{ url_for('index') }}#schedule" class="book-btn">Book classes</a>
+                <button onclick="toggleEditProfile()" class="edit-btn">Edit Profile</button>
+            </div>
         </div>
     </div>
 
@@ -229,14 +508,144 @@
 
     <!-- PAYMENTS -->
     <div class="section-title">
-        Payments
+        Buy Lesson Credits
         <svg>
             <circle cx="6" cy="6" r="6" />
         </svg>
     </div>
 
-    <div class="payment-item">
-        No payments yet.
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div style="background: #e9f8df; color: #2d6a1f; border: 1px solid #bade9f; padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 13px;">
+                {{ messages[0] }}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="payment-packages">
+        <div class="payment-pkg" onclick="selectPackage(this, '5')">
+            <div class="payment-pkg-lessons">5</div>
+            <div class="payment-pkg-label">Lessons</div>
+            <div class="payment-pkg-price">1,000 NOK</div>
+        </div>
+
+        <div class="payment-pkg" onclick="selectPackage(this, '10')">
+            <div class="payment-pkg-lessons">10</div>
+            <div class="payment-pkg-label">Lessons</div>
+            <div class="payment-pkg-price">1,700 NOK</div>
+            <div style="font-size: 10px; color: var(--yogi-green); margin-top: 6px;">Most Popular</div>
+        </div>
+
+        <div class="payment-pkg" onclick="selectPackage(this, '20')">
+            <div class="payment-pkg-lessons">20</div>
+            <div class="payment-pkg-label">Lessons</div>
+            <div class="payment-pkg-price">3,200 NOK</div>
+            <div style="font-size: 10px; color: var(--yogi-green); margin-top: 6px;">Best Value</div>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('buy_lessons') }}" id="paymentForm">
+        <div class="payment-form">
+            <h3>Payment Details (Demo)</h3>
+            
+            <div class="payment-fields">
+                <input type="text" placeholder="Cardholder Name" value="John Doe" readonly>
+                <input type="text" placeholder="Card Number" value="4532 1488 0343 6467" readonly>
+                <input type="text" placeholder="MM/YY" value="12/26" readonly class="payment-fields-full">
+                <input type="text" placeholder="CVV" value="123" readonly class="payment-fields-full">
+            </div>
+
+            <input type="hidden" id="packageInput" name="package" value="">
+
+            <button type="submit" class="payment-submit" id="submitBtn" disabled>
+                Complete Payment
+            </button>
+
+            <div class="payment-note">
+                This is a demo payment system. No real charges will be made.
+            </div>
+        </div>
+    </form>
+
+    <script>
+        function selectPackage(element, packageId) {
+            document.querySelectorAll('.payment-pkg').forEach(pkg => pkg.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('packageInput').value = packageId;
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function toggleEditProfile() {
+            const section = document.getElementById('editProfileSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function cancelEdit() {
+            document.getElementById('editProfileSection').style.display = 'none';
+        }
+
+        function previewAvatar(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('avatarPreviewImg').src = event.target.result;
+                    document.getElementById('avatarPreviewImg').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+
+    <!-- EDIT PROFILE SECTION (Hidden by default) -->
+    <div id="editProfileSection" class="edit-profile-section" style="display: none;">
+        <h3>✏️ Edit Your Profile</h3>
+        
+        <form method="POST" action="{{ url_for('edit_profile') }}" class="profile-form">
+            <div class="profile-form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" value="{{ current_user.full_name }}" required>
+            </div>
+
+            <div class="profile-form-group">
+                <label for="phone">Phone (Optional)</label>
+                <input type="tel" id="phone" name="phone" value="{{ current_user.phone or '' }}">
+            </div>
+
+            <button type="submit" class="profile-btn profile-btn-save" style="grid-column: 1 / -1;">
+                Save Changes
+            </button>
+        </form>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;">
+
+        <h3 style="margin-top: 12px;">Upload Profile Photo</h3>
+        
+        <form method="POST" action="{{ url_for('upload_avatar') }}" enctype="multipart/form-data" class="profile-form">
+            <div class="avatar-upload-wrapper">
+                <div class="avatar-preview" id="avatarPreview">
+                    {% if current_user.avatar_filename %}
+                        <img id="avatarPreviewImg" src="{{ url_for('get_avatar', filename=current_user.avatar_filename) }}" alt="Avatar">
+                    {% else %}
+                        <img id="avatarPreviewImg" src="" alt="Avatar" style="display: none;">
+                        <span>No photo</span>
+                    {% endif %}
+                </div>
+
+                <label for="avatarInput" class="avatar-input-label">
+                    📸 Choose Image
+                </label>
+                <input type="file" id="avatarInput" name="avatar" accept="image/*" onchange="previewAvatar(event)" required>
+
+                <button type="submit" class="profile-btn profile-btn-save" style="grid-column: 1 / -1;">
+                    Upload Photo
+                </button>
+            </div>
+        </form>
+
+        <button onclick="cancelEdit()" class="profile-btn profile-btn-cancel" style="width: 100%; margin-top: 12px;">
+            Close
+        </button>
     </div>
 
 </div>

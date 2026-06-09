@@ -174,12 +174,23 @@
     }
 
     .yogi-user-avatar {
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       border-radius: 999px;
-      background: url("https://via.placeholder.com/64") center/cover no-repeat;
       border: 2px solid var(--yogi-accent-soft);
       flex-shrink: 0;
+      background: #f0f0f0 center/cover no-repeat;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .yogi-user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     /* === Главная белая карточка === */
@@ -354,7 +365,13 @@
           <div class="yogi-user-actions">
             <a href="{{ url_for('my_classes') }}" class="yogi-user-btn">My membership</a>
             <a href="{{ url_for('logout') }}" class="yogi-user-btn">Log out</a>
-            <div class="yogi-user-avatar"></div>
+            <div class="yogi-user-avatar">
+              {% if current_user.avatar_filename %}
+                <img src="{{ url_for('get_avatar', filename=current_user.avatar_filename) }}" alt="Avatar" title="{{ current_user.full_name }}">
+              {% else %}
+                👤
+              {% endif %}
+            </div>
           </div>
           {% else %}
           <span>Hello, guest</span>

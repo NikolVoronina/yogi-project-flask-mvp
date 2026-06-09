@@ -15,6 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from flask import session, redirect, url_for
 import datetime as dt
+import secrets
 
 load_dotenv()
 
@@ -104,6 +105,9 @@ LEVEL_ALIASES = {
 BOOKING_NOTE_COLUMN_READY = False
 PRIVATE_REQUEST_PREFERRED_DATE_READY = False
 PRIVATE_REQUEST_TEACHER_COLUMN_READY = False
+LESSON_CREDITS_COLUMN_READY = False
+AVATAR_COLUMN_READY = False
+PASSWORD_RESET_TABLE_READY = False
 
 TEACHERS = [
     "Mette – Mindful Yoga Guide",
@@ -111,6 +115,8 @@ TEACHERS = [
     "Maya Solberg – Vinyasa Flow Expert",
     "Milla Mackiee – Strength & Stretch Coach",
 ]
+
+PASSWORD_RESET_CODE_TTL_MINUTES = int(os.environ.get("PASSWORD_RESET_CODE_TTL_MINUTES", "15"))
 
 
 def normalize_category(value):
@@ -255,6 +261,125 @@ def ensure_private_request_teacher_column():
         return False
     finally:
         conn.close()
+
+
+def ensure_lesson_credits_column():
+    global LESSON_CREDITS_COLUMN_READY
+
+    if LESSON_CREDITS_COLUMN_READY:
+        return True
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 'users'
+                  AND COLUMN_NAME = 'lesson_credits'
+                """,
+                (DB_NAME,),
+            )
+            exists = cursor.fetchone()
+
+            if not exists:
+                cursor.execute("ALTER TABLE users ADD COLUMN lesson_credits INT DEFAULT 0")
+                conn.commit()
+
+        LESSON_CREDITS_COLUMN_READY = True
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+def ensure_avatar_column():
+    global AVATAR_COLUMN_READY
+
+    if AVATAR_COLUMN_READY:
+        return True
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = %s
+                  AND TABLE_NAME = 'users'
+                  AND COLUMN_NAME = 'avatar_filename'
+                """,
+                (DB_NAME,),
+            )
+            exists = cursor.fetchone()
+
+            if not exists:
+                cursor.execute("ALTER TABLE users ADD COLUMN avatar_filename VARCHAR(255) NULL")
+                conn.commit()
+
+        AVATAR_COLUMN_READY = True
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+def ensure_password_reset_table():
+    global PASSWORD_RESET_TABLE_READY
+
+    if PASSWORD_RESET_TABLE_READY:
+        return True
+
+    conn = get_db_connection()
+
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS password_resets (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    reset_code_hash VARCHAR(255) NOT NULL,
+                    expires_at DATETIME NOT NULL,
+                    used_at DATETIME NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    INDEX idx_password_resets_user_id (user_id),
+                    INDEX idx_password_resets_expires_at (expires_at),
+                    CONSTRAINT fk_password_resets_user
+                        FOREIGN KEY (user_id) REFERENCES users(id)
+                        ON DELETE CASCADE
+                )
+                """
+            )
+            conn.commit()
+
+        PASSWORD_RESET_TABLE_READY = True
+        return True
+    except Exception:
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
+def clear_password_reset_session():
+    session.pop("password_reset_user_id", None)
+    session.pop("password_reset_verified", None)
+    session.pop("password_reset_record_id", None)
+
+
+def generate_demo_reset_code():
+    # Demo-only code: six digits shown to the user instead of being emailed.
+    return f"{secrets.randbelow(10**6):06d}"
 
 
 def get_pending_private_requests_count():
@@ -505,6 +630,219 @@ def login():
 
     return render_template("login.html", error=error, current_user=None)
 
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    current_user = get_current_user()
+
+    if current_user:
+        return redirect(url_for("index"))
+
+    error = None
+    demo_code = None
+    email = ""
+
+    reset_user_id = session.get("password_reset_user_id")
+    reset_verified = session.get("password_reset_verified")
+    reset_record_id = session.get("password_reset_record_id")
+
+    if reset_user_id and reset_verified and reset_record_id:
+        current_step = "reset"
+    elif reset_user_id:
+        current_step = "code"
+    else:
+        current_step = "email"
+
+    if request.method == "POST":
+        submitted_step = request.form.get("step", "email")
+
+        if submitted_step == "email":
+            email = request.form.get("email", "").strip()
+
+            if not email:
+                error = "Please enter your email address."
+                current_step = "email"
+            elif not ensure_password_reset_table():
+                error = "Service is temporarily unavailable. Please try again later."
+                current_step = "email"
+            else:
+                conn = get_db_connection()
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute("SELECT id, email FROM users WHERE email = %s", (email,))
+                        user = cursor.fetchone()
+
+                        if not user:
+                            error = "User with this email was not found."
+                            current_step = "email"
+                        else:
+                            reset_code = generate_demo_reset_code()
+                            reset_code_hash = generate_password_hash(reset_code)
+                            expires_at = dt.datetime.utcnow() + dt.timedelta(minutes=PASSWORD_RESET_CODE_TTL_MINUTES)
+
+                            cursor.execute(
+                                """
+                                UPDATE password_resets
+                                SET used_at = NOW()
+                                WHERE user_id = %s AND used_at IS NULL
+                                """,
+                                (user["id"],),
+                            )
+
+                            cursor.execute(
+                                """
+                                INSERT INTO password_resets (user_id, reset_code_hash, expires_at)
+                                VALUES (%s, %s, %s)
+                                """,
+                                (user["id"], reset_code_hash, expires_at),
+                            )
+
+                            conn.commit()
+
+                            session["password_reset_user_id"] = user["id"]
+                            session["password_reset_verified"] = False
+                            session["password_reset_record_id"] = cursor.lastrowid
+                            demo_code = reset_code
+                            current_step = "code"
+                finally:
+                    conn.close()
+
+        elif submitted_step == "code":
+            reset_user_id = session.get("password_reset_user_id")
+            code = request.form.get("reset_code", "").strip()
+
+            if not reset_user_id:
+                clear_password_reset_session()
+                current_step = "email"
+                error = "Recovery session expired. Start again."
+            elif not code:
+                error = "Please enter the recovery code."
+                current_step = "code"
+            elif not ensure_password_reset_table():
+                error = "Service is temporarily unavailable. Please try again later."
+                current_step = "code"
+            else:
+                conn = get_db_connection()
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            SELECT id, reset_code_hash, expires_at
+                            FROM password_resets
+                            WHERE user_id = %s AND used_at IS NULL
+                            ORDER BY id DESC
+                            LIMIT 1
+                            """,
+                            (reset_user_id,),
+                        )
+                        reset_record = cursor.fetchone()
+
+                        if not reset_record:
+                            error = "Recovery code was not found. Request a new one."
+                            current_step = "code"
+                        else:
+                            now_utc = dt.datetime.utcnow()
+                            if reset_record["expires_at"] < now_utc:
+                                error = "Recovery code has expired. Request a new one."
+                                current_step = "code"
+                            elif not check_password_hash(reset_record["reset_code_hash"], code):
+                                error = "Invalid recovery code."
+                                current_step = "code"
+                            else:
+                                session["password_reset_verified"] = True
+                                session["password_reset_record_id"] = reset_record["id"]
+                                return redirect(url_for("forgot_password"))
+                finally:
+                    conn.close()
+
+        elif submitted_step == "reset":
+            reset_user_id = session.get("password_reset_user_id")
+            reset_verified = session.get("password_reset_verified")
+            reset_record_id = session.get("password_reset_record_id")
+            password = request.form.get("password", "")
+            password_confirm = request.form.get("password_confirm", "")
+
+            if not reset_user_id or not reset_verified or not reset_record_id:
+                clear_password_reset_session()
+                current_step = "email"
+                error = "Recovery session expired. Start again."
+            elif len(password) < 8:
+                error = "Password must be at least 8 characters long."
+                current_step = "reset"
+            elif password != password_confirm:
+                error = "Passwords do not match."
+                current_step = "reset"
+            elif not ensure_password_reset_table():
+                error = "Service is temporarily unavailable. Please try again later."
+                current_step = "reset"
+            else:
+                conn = get_db_connection()
+                try:
+                    with conn.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            SELECT id, user_id, expires_at, used_at
+                            FROM password_resets
+                            WHERE id = %s
+                            LIMIT 1
+                            """,
+                            (reset_record_id,),
+                        )
+                        reset_record = cursor.fetchone()
+
+                        if not reset_record or reset_record["user_id"] != reset_user_id:
+                            error = "Recovery session is invalid. Please try again."
+                            current_step = "reset"
+                        elif reset_record["used_at"] is not None:
+                            error = "Recovery code has already been used."
+                            current_step = "reset"
+                        elif reset_record["expires_at"] < dt.datetime.utcnow():
+                            error = "Recovery code has expired. Request a new one."
+                            current_step = "reset"
+                        else:
+                            password_hash = generate_password_hash(password)
+
+                            cursor.execute(
+                                "UPDATE users SET password_hash = %s WHERE id = %s",
+                                (password_hash, reset_user_id),
+                            )
+
+                            cursor.execute(
+                                "UPDATE password_resets SET used_at = NOW() WHERE id = %s",
+                                (reset_record_id,),
+                            )
+
+                            conn.commit()
+                            clear_password_reset_session()
+                            flash("Password has been changed successfully. Please log in.", "success")
+                            return redirect(url_for("login"))
+                except Exception:
+                    conn.rollback()
+                    error = "Failed to reset password. Please try again."
+                    current_step = "reset"
+                finally:
+                    conn.close()
+
+    return render_template(
+        "forgot_password.html",
+        current_user=None,
+        error=error,
+        email=email,
+        demo_code=demo_code,
+        ttl_minutes=PASSWORD_RESET_CODE_TTL_MINUTES,
+        current_step=current_step,
+    )
+
+
+@app.route("/forgot-password/code", methods=["GET", "POST"])
+def forgot_password_code():
+    return redirect(url_for("forgot_password"))
+
+
+@app.route("/forgot-password/reset", methods=["GET", "POST"])
+def reset_password():
+    return redirect(url_for("forgot_password"))
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -649,12 +987,162 @@ def my_classes():
     finally:
         conn.close()
 
+    ensure_lesson_credits_column()
+    
     return render_template(
         "my_membership.html",
         current_user=current_user,
         future_classes=future_classes,
         past_classes=past_classes,
+        lesson_credits=current_user.get("lesson_credits", 0),
     )
+
+
+# Payment processing (demo)
+@app.route("/buy-lessons", methods=["POST"])
+@login_required
+def buy_lessons():
+    current_user = get_current_user()
+    package = request.form.get("package", "").strip()
+    
+    packages = {
+        "5": {"lessons": 5, "price": 49},
+        "10": {"lessons": 10, "price": 89},
+        "20": {"lessons": 20, "price": 159},
+    }
+    
+    if package not in packages:
+        flash("Invalid package selected.", "error")
+        return redirect(url_for("my_classes"))
+    
+    pkg = packages[package]
+    lessons = pkg["lessons"]
+    
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "UPDATE users SET lesson_credits = lesson_credits + %s WHERE id = %s",
+                (lessons, current_user["id"]),
+            )
+            conn.commit()
+        
+        flash(f"✓ Payment successful! {lessons} lessons added to your account.", "success")
+    except Exception as e:
+        conn.rollback()
+        flash("Payment failed. Please try again.", "error")
+    finally:
+        conn.close()
+    
+    return redirect(url_for("my_classes"))
+
+
+# Profile editing and avatar upload
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@app.route("/edit-profile", methods=["POST"])
+@login_required
+def edit_profile():
+    current_user = get_current_user()
+    
+    full_name = request.form.get("full_name", "").strip()
+    phone = request.form.get("phone", "").strip()
+    
+    if not full_name:
+        flash("Name cannot be empty.", "error")
+        return redirect(url_for("my_classes"))
+    
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "UPDATE users SET full_name = %s, phone = %s WHERE id = %s",
+                (full_name, phone, current_user["id"]),
+            )
+            conn.commit()
+        
+        flash("✓ Profile updated successfully.", "success")
+    except Exception as e:
+        conn.rollback()
+        flash("Profile update failed. Please try again.", "error")
+    finally:
+        conn.close()
+    
+    return redirect(url_for("my_classes"))
+
+
+@app.route("/upload-avatar", methods=["POST"])
+@login_required
+def upload_avatar():
+    current_user = get_current_user()
+    ensure_avatar_column()
+    
+    if 'avatar' not in request.files:
+        flash("No file selected.", "error")
+        return redirect(url_for("my_classes"))
+    
+    file = request.files['avatar']
+    
+    if file.filename == '':
+        flash("No file selected.", "error")
+        return redirect(url_for("my_classes"))
+    
+    if not allowed_file(file.filename):
+        flash("Only PNG, JPG, JPEG, and GIF files are allowed.", "error")
+        return redirect(url_for("my_classes"))
+    
+    # Create avatars folder if it doesn't exist
+    import os
+    avatar_dir = os.path.join(app.root_path, 'static', 'avatars')
+    os.makedirs(avatar_dir, exist_ok=True)
+    
+    # Save file with unique name
+    import secrets
+    file_ext = file.filename.rsplit('.', 1)[1].lower()
+    filename = f"user_{current_user['id']}_{secrets.token_hex(8)}.{file_ext}"
+    file_path = os.path.join(avatar_dir, filename)
+    
+    try:
+        file.save(file_path)
+        
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE users SET avatar_filename = %s WHERE id = %s",
+                    (filename, current_user["id"]),
+                )
+                conn.commit()
+            
+            flash("✓ Avatar updated successfully.", "success")
+        except Exception as e:
+            conn.rollback()
+            os.remove(file_path)
+            flash("Avatar update failed. Please try again.", "error")
+        finally:
+            conn.close()
+    except Exception as e:
+        flash("File upload failed. Please try again.", "error")
+    
+    return redirect(url_for("my_classes"))
+
+
+# Get avatar image
+@app.route("/avatars/<filename>")
+def get_avatar(filename):
+    import os
+    avatar_dir = os.path.join(app.root_path, 'static', 'avatars')
+    file_path = os.path.join(avatar_dir, filename)
+    
+    if not os.path.exists(file_path):
+        return "", 404
+    
+    from flask import send_file
+    return send_file(file_path)
 
 
 # ---------------- ADMIN BOOKINGS ----------------
@@ -1013,7 +1501,7 @@ def private_request():
                     cursor.execute(sql, (name, email, message, preferred_date, "pending"))
                 conn.commit()
 
-            flash("Forespørselen din er sendt! 🧘‍♀️")
+            flash("We will answer on your mail as soon as possible. Check the spam 'Yogi' ")
             return redirect(url_for("private_request"))
 
         finally:

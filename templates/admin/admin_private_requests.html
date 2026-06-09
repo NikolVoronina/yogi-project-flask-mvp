@@ -2,233 +2,238 @@
 
 {% block content %}
 <style>
-  :root {
-    --yogi-green: #bad341;
-    --yogi-dark: #1e1e1e;
-    --yogi-pink: #d341c4;
-    --yogi-muted: #666666;
-  }
+    :root {
+        --yogi-green: #bad341;
+        --yogi-dark: #1e1e1e;
+        --yogi-pink: #d341c4;
+        --yogi-muted: #666666;
+    }
 
-  .apr-hero {
-    margin-bottom: 28px;
-  }
+    .apr-hero {
+        margin-bottom: 28px;
+    }
 
-  .apr-hero h1 {
-    font-size: 36px;
-    font-weight: 700;
-    margin: 0 0 10px;
-    color: var(--yogi-dark);
-  }
+    .apr-hero h1 {
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0 0 10px;
+        color: var(--yogi-dark);
+    }
 
-  .apr-stats {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background:
-      radial-gradient(circle at top left, rgba(186, 211, 65, 0.35), transparent 60%),
-      #111827;
-    color: #f9fafb;
-    border-radius: 999px;
-    padding: 8px 18px;
-    font-size: 14px;
-  }
+    .apr-stats {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background:
+            radial-gradient(circle at top left, rgba(186, 211, 65, 0.35), transparent 60%),
+            #111827;
+        color: #f9fafb;
+        border-radius: 999px;
+        padding: 8px 18px;
+        font-size: 14px;
+    }
 
-  .apr-stats-count {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--yogi-green);
-  }
+    .apr-stats-count {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--yogi-green);
+    }
 
-  .apr-flash {
-    border-radius: 14px;
-    padding: 14px 16px;
-    font-size: 14px;
-    background: #e9f8df;
-    color: #2d6a1f;
-    border: 1px solid #bade9f;
-    margin-bottom: 20px;
-  }
+    .apr-flash {
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 14px;
+        background: #e9f8df;
+        color: #2d6a1f;
+        border: 1px solid #bade9f;
+        margin-bottom: 20px;
+    }
 
-  .apr-table-wrap {
-    border-radius: 24px;
-    border: 1px solid #e5e7eb;
-    overflow-x: auto;
-    background: #fafafa;
-  }
+    .apr-table-wrap {
+        border-radius: 24px;
+        border: 1px solid #e5e7eb;
+        overflow-x: auto;
+        background: #fafafa;
+    }
 
-  .apr-table {
-    width: 100%;
-    min-width: 850px;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
+    .apr-table {
+        width: 100%;
+        min-width: 850px;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
 
-  .apr-table thead {
-    background: #111827;
-    color: #f9fafb;
-  }
+    .apr-table thead {
+        background: #111827;
+        color: #f9fafb;
+    }
 
-  .apr-table thead th {
-    padding: 11px 12px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    white-space: nowrap;
-  }
+    .apr-table thead th {
+        padding: 11px 12px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+    }
 
-  .apr-table tbody tr {
-    border-bottom: 1px solid #f0f0f0;
-    transition: background 0.12s ease;
-  }
+    .apr-table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.12s ease;
+    }
 
-  .apr-table tbody tr:last-child {
-    border-bottom: none;
-  }
+    .apr-table tbody tr:last-child {
+        border-bottom: none;
+    }
 
-  .apr-table tbody tr:hover {
-    background: #f5f5f5;
-  }
+    .apr-table tbody tr:hover {
+        background: #f5f5f5;
+    }
 
-  .apr-table td {
-    padding: 11px 12px;
-    vertical-align: top;
-    color: #1f2937;
-  }
+    .apr-table td {
+        padding: 11px 12px;
+        vertical-align: top;
+        color: #1f2937;
+    }
 
-  .apr-message {
-    max-width: 150px;
-    color: #4b5563;
-    line-height: 1.4;
-    word-break: break-word;
-  }
+    .apr-message {
+        max-width: 150px;
+        color: #4b5563;
+        line-height: 1.4;
+        word-break: break-word;
+    }
 
-  .apr-badge {
-    display: inline-flex;
-    align-items: center;
-    border-radius: 999px;
-    padding: 3px 9px;
-    font-size: 11px;
-    font-weight: 600;
-  }
+    .apr-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 3px 9px;
+        font-size: 11px;
+        font-weight: 600;
+    }
 
-  .apr-badge.pending {
-    background: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
-  }
+    .apr-badge.pending {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
 
-  .apr-badge.completed {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
-  }
+    .apr-badge.completed {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #6ee7b7;
+    }
 
-  .apr-status-form {
-    display: inline;
-  }
+    .apr-status-form {
+        display: inline;
+    }
 
-  .apr-status-btn {
-    border: none;
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
-  }
+    .apr-status-btn {
+        border: none;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
 
-  .apr-status-btn.completed-btn {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
-  }
+    .apr-status-btn.completed-btn {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #6ee7b7;
+    }
 
-  .apr-status-btn.completed-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-  }
+    .apr-status-btn.completed-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
 
-  .apr-status-btn.pending-btn {
-    background: var(--yogi-green);
-    color: var(--yogi-dark);
-    border: 1px solid var(--yogi-green);
-  }
+    .apr-status-btn.pending-btn {
+        background: var(--yogi-green);
+        color: var(--yogi-dark);
+        border: 1px solid var(--yogi-green);
+    }
 
-  .apr-status-btn.pending-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(186, 211, 65, 0.4);
-  }
+    .apr-status-btn.pending-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(186, 211, 65, 0.4);
+    }
 
-  .apr-empty {
-    padding: 48px;
-    text-align: center;
-    color: var(--yogi-muted);
-    font-size: 15px;
-  }
+    .apr-empty {
+        padding: 48px;
+        text-align: center;
+        color: var(--yogi-muted);
+        font-size: 15px;
+    }
 </style>
 
 <div class="apr-hero">
-  <h1>Individuelle forespørsler</h1>
-  <div class="apr-stats">
-    <span>Nye forespørsler:</span>
-    <span class="apr-stats-count">{{ pending_count }}</span>
-  </div>
+    <h1>Private Lesson Requests</h1>
+    <div class="apr-stats">
+        <span>New Requests:</span>
+        <span class="apr-stats-count">{{ pending_count }}</span>
+    </div>
 </div>
 
 {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <div class="apr-flash">{{ messages[0] }}</div>
-  {% endif %}
+{% if messages %}
+<div class="apr-flash">{{ messages[0] }}</div>
+{% endif %}
 {% endwith %}
 
 {% if requests_list %}
-  <div class="apr-table-wrap">
+<div class="apr-table-wrap">
     <table class="apr-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Navn</th>
-          <th>Email</th>
-          <th>Dag</th>
-          <th>Lærer</th>
-          <th>Melding</th>
-          <th>Status</th>
-          <th>Handling</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for req in requests_list %}
-        <tr>
-          <td>{{ req.id }}</td>
-          <td><strong>{{ req.name }}</strong></td>
-          <td>{{ req.email }}</td>
-          <td style="white-space:nowrap;">{{ req.preferred_date or "—" }}</td>
-          <td style="white-space:nowrap;">{% if req.teacher %}{{ req.teacher[:15] }}{% if req.teacher|length > 15 %}...{% endif %}{% else %}—{% endif %}</td>
-          <td class="apr-message">{% if req.message %}{{ req.message[:50] }}{% if req.message|length > 50 %}...{% endif %}{% else %}—{% endif %}</td>
-          <td>
-            {% set s = req.status or 'pending' %}
-            <span class="apr-badge {{ s }}">{{ 'Venter' if s == 'pending' else 'Fullført' }}</span>
-          </td>
-          <td>
-            <form method="POST" action="{{ url_for('admin_update_private_request_status', request_id=req.id) }}" class="apr-status-form">
-              {% set s = req.status or 'pending' %}
-              <input type="hidden" name="status" value="{% if s == 'pending' %}completed{% else %}pending{% endif %}">
-              <button type="submit" class="apr-status-btn {% if s == 'pending' %}completed-btn{% else %}pending-btn{% endif %}">
-                {% if s == 'pending' %}✓ Done{% else %}← Pending{% endif %}
-              </button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Instructor</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests_list %}
+            <tr>
+                <td>{{ req.id }}</td>
+                <td><strong>{{ req.name }}</strong></td>
+                <td>{{ req.email }}</td>
+                <td style="white-space:nowrap;">{{ req.preferred_date or "—" }}</td>
+                <td style="white-space:nowrap;">{% if req.teacher %}{{ req.teacher[:15] }}{% if req.teacher|length > 15
+                    %}...{% endif %}{% else %}—{% endif %}</td>
+                <td class="apr-message">{% if req.message %}{{ req.message[:50] }}{% if req.message|length > 50 %}...{%
+                    endif %}{% else %}—{% endif %}</td>
+                <td>
+                    {% set s = req.status or 'pending' %}
+                    <span class="apr-badge {{ s }}">{{ 'Pending' if s == 'pending' else 'Completed' }}</span>
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin_update_private_request_status', request_id=req.id) }}"
+                        class="apr-status-form">
+                        {% set s = req.status or 'pending' %}
+                        <input type="hidden" name="status"
+                            value="{% if s == 'pending' %}completed{% else %}pending{% endif %}">
+                        <button type="submit"
+                            class="apr-status-btn {% if s == 'pending' %}completed-btn{% else %}pending-btn{% endif %}">
+                            {% if s == 'pending' %}✓ Done{% else %}← Pending{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-  </div>
+</div>
 {% else %}
-  <div class="apr-table-wrap">
-    <div class="apr-empty">Ingen forespørsler enda.</div>
-  </div>
+<div class="apr-table-wrap">
+    <div class="apr-empty">No requests yet.</div>
+</div>
 {% endif %}
 {% endblock %}

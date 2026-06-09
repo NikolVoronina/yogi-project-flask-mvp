@@ -142,8 +142,8 @@
 
 <div class="pr-wrap">
   <div class="pr-hero">
-    <h1>Be om individuell yogatime</h1>
-    <p>Velg ønsket dag og lærer, og fortell oss hva du ønsker fra timen.</p>
+    <h1>Request a Private Yoga Lesson</h1>
+    <p>Choose your preferred date and instructor, and tell us what you'd like from the lesson.</p>
   </div>
 
   {% with messages = get_flashed_messages() %}
@@ -154,21 +154,21 @@
 
   <div class="pr-card">
     <div class="pr-account">
-      <div class="pr-account-title">Fra din konto</div>
-      <p>Navn: <strong>{{ current_user.full_name }}</strong></p>
-      <p>E-post: <strong>{{ current_user.email }}</strong></p>
+      <div class="pr-account-title">From Your Account</div>
+      <p>Name: <strong>{{ current_user.full_name }}</strong></p>
+      <p>Email: <strong>{{ current_user.email }}</strong></p>
     </div>
 
     <form method="POST" class="pr-form">
       <div class="pr-field">
-        <label for="preferred_date">Ønsket dag</label>
+        <label for="preferred_date">Preferred Date</label>
         <input type="date" id="preferred_date" name="preferred_date" required>
       </div>
 
       <div class="pr-field">
-        <label for="teacher">Velg lærer</label>
+        <label for="teacher">Choose Instructor</label>
         <select id="teacher" name="teacher" required>
-          <option value="" disabled selected>— Velg en lærer —</option>
+          <option value="" disabled selected>— Select an instructor —</option>
           {% for teacher in teachers %}
           <option value="{{ teacher }}">{{ teacher }}</option>
           {% endfor %}
@@ -176,11 +176,11 @@
       </div>
 
       <div class="pr-field">
-        <label for="message">Hva ønsker du fra timen?</label>
-        <textarea id="message" name="message" placeholder="Beskriv ønsker, mål eller spørsmål..." required></textarea>
+        <label for="message">What would you like from the lesson?</label>
+        <textarea id="message" name="message" placeholder="Describe your wishes, goals, or questions..." required></textarea>
       </div>
 
-      <button type="submit" class="pr-submit">Send forespørsel</button>
+      <button type="submit" class="pr-submit">Send Request</button>
     </form>
   </div>
 </div>
